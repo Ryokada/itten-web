@@ -52,6 +52,13 @@ Success! Created itten-web-front at D:\WORK\git\itten-web\itten-web-front
 
 
 
+### Vercel
+
+Vercelに
+
+自動デプロイの制限
+https://zenn.dev/bisque/scraps/50a51a28d6eb85
+
 
 
 ## LINEログイン
