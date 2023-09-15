@@ -61,6 +61,18 @@ https://zenn.dev/bisque/scraps/50a51a28d6eb85
 
 
 
+### favicon
+
+**/app**以下に `favicon.icon`を保存。自動でやってくれる
+
+
+
+### 画像
+
+**Image**で、高さ幅指定
+
+
+
 ## LINEログイン
 
 https://developers.line.biz/ja/docs/line-login/overview/#introduction
