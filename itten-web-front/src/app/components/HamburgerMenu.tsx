@@ -2,12 +2,6 @@
 import Link from 'next/link'
 import React, { useState } from 'react'
 
-// リンクの型定義
-type LinkItem = {
-    href: string
-    label: string
-}
-
 // Props の型定義
 type HamburgerMenuProps = {
     links: LinkItem[]
@@ -15,7 +9,6 @@ type HamburgerMenuProps = {
 
 export default function HambugerMenu({ links }: HamburgerMenuProps) {
     const [isOpen, setIsOpen] = useState(false)
-    const menuList = [{ name: 'トップ', link: '/' }]
 
     const toggleMenuOpen = () => {
         setIsOpen(!isOpen)
