@@ -100,7 +100,9 @@ https://zenn.dev/tentel/articles/cc76611f4010c9
 
 #### シークレットキーのJSONのデプロイ
 
-T.B.D
+https://github.com/vercel/vercel/issues/749#issuecomment-707515089
+
+JSONを平文にして環境変数で（公開(NEXT_PUBLIC)しない）
 
 ### NextAuth
 
