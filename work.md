@@ -61,18 +61,66 @@ https://zenn.dev/bisque/scraps/50a51a28d6eb85
 
 
 
+## 画像
+
+**Image**で、高さ幅指定
+
 ### favicon
 
 **/app**以下に `favicon.icon`を保存。自動でやってくれる
 
+## 認証
+
+Firebase Auth
+
+https://zenn.dev/tentel/articles/cc76611f4010c9
+
+### 準備
+
+* Firebase adminのキーを取得
+  * `/itten-web-firebase-adminsdk.json`
+* Firebase SDKの準備
+* ライブラリのインストール
+
+#### ライブラリ
+
+```
+npm install firebase@9 # ブログに合わせるためにv9
+npm install firebase-admin@11 # ブログに合わせるためv11
+npm install next-auth
+```
+
+### Firebase周りの実装
+
+https://zenn.dev/tentel/articles/cc76611f4010c9
+
+↑のとおりに、クライアントコーンポーネント用とサーバーコンポーネント用に実装。
 
 
-### 画像
 
-**Image**で、高さ幅指定
+#### シークレットキーのJSONのデプロイ
+
+T.B.D
+
+### NextAuth
+
+App Routerに対応させる。上のブログはハンドラーの実装が対応できていない。
+以下を参考
+https://qiita.com/kage1020/items/8224efd0f3557256c541
+
+
+
+
+
+
+
+
 
 
 
 ## LINEログイン
 
 https://developers.line.biz/ja/docs/line-login/overview/#introduction
+
+IDを取るときだけログインする方針に
+

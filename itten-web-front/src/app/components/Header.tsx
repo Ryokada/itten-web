@@ -2,8 +2,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import logo from '../../../public/itten-logo.png'
-import useIsDesktop from '../hooks/useIsDesktop'
-import HambugerMenu from './HamburgerMenu'
+import HambugerMenu from '@/app/components/HamburgerMenu'
+import useIsDesktop from '@/app/hooks/useIsDesktop'
 
 /**
  * 共通のヘッダーコンポーネントです
