@@ -1,4 +1,4 @@
-import NextAuth, { DefaultSession } from 'next-auth'
+import NextAuth, { DefaultSession, DefaultUser } from 'next-auth'
 import { JWT } from 'next-auth/jwt'
 
 declare module 'next-auth' {
@@ -8,6 +8,10 @@ declare module 'next-auth' {
             uid: string
             emailVerified?: boolean
         } & DefaultSession['user']
+    }
+    interface User extends DefaultUser {
+        uid: string
+        emailVerified?: boolean
     }
 }
 

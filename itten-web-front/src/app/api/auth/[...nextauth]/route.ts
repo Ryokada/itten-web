@@ -17,14 +17,13 @@ export const authOptions: NextAuthOptions = {
                 if (credentials?.idToken) {
                     try {
                         const decoded = await auth.verifyIdToken(credentials?.idToken)
-
                         return {
+                            uid: decoded.uid,
                             id: decoded.uid,
-                            name: decoded.name || '', // nameが存在しない場合はデフォルト値を使用
-                            email: decoded.emailVerified || decoded.email || '',
-                            image: decoded.picture || '', // pictureが存在しない場合はデフォルト値を使用
+                            email: decoded.email || '',
+                            image: decoded.picture || '',
+                            name: decoded.name || '',
                             emailVerified: decoded.emailVerified || false,
-                            // 他の必要なプロパティもこちらに追加します
                         }
                     } catch (err) {
                         console.error(err)
@@ -39,12 +38,20 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async jwt({ token, user }) {
+            if (user) {
+                if (user.emailVerified instanceof Date) {
+                    token.emailVerified = true
+                } else {
+                    token.emailVerified = user.emailVerified ?? false
+                }
+                token.uid = user.id
+            }
             return token
         },
         // sessionにJWTトークンからのユーザ情報を格納
         async session({ session, token }) {
             session.user.emailVerified = token.emailVerified
-            session.user.uid = token.uid
+            session.user.uid = token.uid ?? token.sub
             return session
         },
     },
