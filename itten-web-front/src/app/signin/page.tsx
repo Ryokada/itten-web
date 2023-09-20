@@ -1,7 +1,8 @@
 'use client'
 
-import { signInWithEmailAndPassword } from 'firebase/auth'
-import { signIn as signInByNextAuth } from 'next-auth/react'
+import { signInWithEmailAndPassword, signOut as singOutByFirebase } from 'firebase/auth'
+import { signIn as signInByNextAuth, signOut as signOutByNextAuth } from 'next-auth/react'
+
 import { useState } from 'react'
 import { auth } from '@/firebase/client'
 
@@ -22,13 +23,18 @@ const SingIn = () => {
             const idToken = await userCredential.user.getIdToken()
             await signInByNextAuth('credentials', {
                 idToken,
-                callbackUrl: '/',
+                callbackUrl: '/member/mypage',
             })
         } catch (e) {
             console.error(e)
+            // TODO: エラーメッセージ
         }
     }
 
+    const signOut = async () => {
+        await singOutByFirebase(auth)
+        signOutByNextAuth({ redirect: true, callbackUrl: '/' })
+    }
     return (
         <main className='flex min-h-screen flex-col items-center p-24'>
             <div className='max-w-md w-full space-y-8'>
@@ -82,6 +88,16 @@ const SingIn = () => {
                         </button>
                     </div>
                 </form>
+
+                <div>
+                    <button
+                        type='button'
+                        className='group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
+                        onClick={() => signOut()}
+                    >
+                        ログアウト
+                    </button>
+                </div>
             </div>
         </main>
     )
