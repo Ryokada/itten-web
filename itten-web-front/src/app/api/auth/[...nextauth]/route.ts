@@ -3,7 +3,7 @@ import type { NextAuthOptions, User } from 'next-auth'
 
 import CredentialsProvider from 'next-auth/providers/credentials'
 
-import { auth } from '@/firebase/admin'
+import { authAdmin } from '@/firebase/admin'
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -16,7 +16,7 @@ export const authOptions: NextAuthOptions = {
             authorize: async (credentials, req) => {
                 if (credentials?.idToken) {
                     try {
-                        const decoded = await auth.verifyIdToken(credentials?.idToken)
+                        const decoded = await authAdmin.verifyIdToken(credentials?.idToken)
                         return {
                             uid: decoded.uid,
                             id: decoded.uid,
