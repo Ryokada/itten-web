@@ -1,5 +1,6 @@
 import { CollectionReference } from 'firebase-admin/firestore';
 import { PageNotFoundError } from 'next/dist/shared/lib/utils';
+import Link from 'next/link';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { BigIcon } from '@/app/components/Icon';
@@ -60,6 +61,9 @@ const Mypage = async () => {
                     </div>
                 </div>
             </div>
+            <Link href='/member/mypage/edit' className='my-3 text-blue-600 font-bold'>
+                {'変更はこちら >'}
+            </Link>
         </main>
     );
 };
