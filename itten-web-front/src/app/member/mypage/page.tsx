@@ -1,29 +1,29 @@
-import { CollectionReference } from 'firebase-admin/firestore'
-import { PageNotFoundError } from 'next/dist/shared/lib/utils'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
-import { BigIcon } from '@/app/components/Icon'
-import { PostionLabel } from '@/app/components/Postion'
-import { dbAdmin } from '@/firebase/admin'
-import logo from '@public/itten-logo.png'
+import { CollectionReference } from 'firebase-admin/firestore';
+import { PageNotFoundError } from 'next/dist/shared/lib/utils';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { BigIcon } from '@/app/components/Icon';
+import { PostionLabel } from '@/app/components/Postion';
+import { dbAdmin } from '@/firebase/admin';
+import logo from '@public/itten-logo.png';
 
 /**
  * メンバー用のマイページコンポーネントです
  */
 const Mypage = async () => {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
     if (!session) {
-        throw new PageNotFoundError('MyPage')
+        throw new PageNotFoundError('MyPage');
     }
 
     // TODO 共通化
-    const memberCollection = dbAdmin.collection('members') as CollectionReference<Member>
-    const userDocRef = memberCollection.doc(session?.user.uid)
-    const docSnap = await userDocRef.get()
-    const memberInfo = docSnap.data()
+    const memberCollection = dbAdmin.collection('members') as CollectionReference<Member>;
+    const userDocRef = memberCollection.doc(session?.user.uid);
+    const docSnap = await userDocRef.get();
+    const memberInfo = docSnap.data();
 
     if (!memberInfo) {
-        return <main className='flex flex-col items-center min-h-screen p-24'>ロード中</main>
+        return <main className='flex flex-col items-center min-h-screen p-24'>ロード中</main>;
     }
 
     return (
@@ -50,7 +50,7 @@ const Mypage = async () => {
                                     {i + 1}.
                                     <PostionLabel positionNumber={p} />
                                 </div>
-                            )
+                            );
                         })}
                     </div>
                     <div className='text-xs rounded bg-slate-300 p-2 h-20'>
@@ -61,7 +61,7 @@ const Mypage = async () => {
                 </div>
             </div>
         </main>
-    )
-}
+    );
+};
 
-export default Mypage
+export default Mypage;

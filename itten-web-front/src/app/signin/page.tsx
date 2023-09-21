@@ -1,40 +1,40 @@
-'use client'
+'use client';
 
-import { signInWithEmailAndPassword, signOut as singOutByFirebase } from 'firebase/auth'
-import { signIn as signInByNextAuth, signOut as signOutByNextAuth } from 'next-auth/react'
+import { signInWithEmailAndPassword, signOut as singOutByFirebase } from 'firebase/auth';
+import { signIn as signInByNextAuth, signOut as signOutByNextAuth } from 'next-auth/react';
 
-import { useState } from 'react'
-import { auth } from '@/firebase/client'
+import { useState } from 'react';
+import { auth } from '@/firebase/client';
 
 /**
  * サインイン画面
  */
 const SingIn = () => {
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
     const signIn = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        if (!email) return
-        if (!password) return
+        e.preventDefault();
+        if (!email) return;
+        if (!password) return;
 
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password)
-            const idToken = await userCredential.user.getIdToken()
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const idToken = await userCredential.user.getIdToken();
             await signInByNextAuth('credentials', {
                 idToken,
                 callbackUrl: '/member/mypage',
-            })
+            });
         } catch (e) {
-            console.error(e)
+            console.error(e);
             // TODO: エラーメッセージ
         }
-    }
+    };
 
     const signOut = async () => {
-        await singOutByFirebase(auth)
-        signOutByNextAuth({ redirect: true, callbackUrl: '/' })
-    }
+        await singOutByFirebase(auth);
+        signOutByNextAuth({ redirect: true, callbackUrl: '/' });
+    };
     return (
         <main className='flex min-h-screen flex-col items-center'>
             <div className='max-w-md w-full space-y-8'>
@@ -100,7 +100,7 @@ const SingIn = () => {
                 </div>
             </div>
         </main>
-    )
-}
+    );
+};
 
-export default SingIn
+export default SingIn;

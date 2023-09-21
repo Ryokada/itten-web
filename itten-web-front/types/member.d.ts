@@ -2,39 +2,39 @@ type Member = {
     /**
      * メンバーのアカウントID
      */
-    id: string
+    id: string;
 
     /**
      * 名前
      */
-    name: string
+    name: string;
 
     /**
      * 背番号
      *
      * 001などがあるので文字列
      */
-    number: string
+    number: string;
 
     /**
      * 通知用のLINEID
      */
-    lineId?: string
+    lineId?: string;
 
     /**
      * アイコン画像のURL
      */
-    imageUrl?: string
+    imageUrl?: string;
 
     /**
      * 希望ポジション
      *
      * ポジション番号の配列
      */
-    desiredPositions: Array<string>
+    desiredPositions: Array<string>;
 
     /**
      * ポジションについてコメント
      */
-    positionComment?: string
-}
+    positionComment?: string;
+};

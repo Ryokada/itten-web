@@ -1,18 +1,18 @@
-'use client'
-import Link from 'next/link'
-import React, { useState } from 'react'
+'use client';
+import Link from 'next/link';
+import React, { useState } from 'react';
 
 // Props の型定義
 type HamburgerMenuProps = {
-    links: LinkItem[]
-}
+    links: LinkItem[];
+};
 
 export default function HambugerMenu({ links }: HamburgerMenuProps) {
-    const [isOpen, setIsOpen] = useState(false)
+    const [isOpen, setIsOpen] = useState(false);
 
     const toggleMenuOpen = () => {
-        setIsOpen(!isOpen)
-    }
+        setIsOpen(!isOpen);
+    };
 
     return (
         <div>
@@ -60,5 +60,5 @@ export default function HambugerMenu({ links }: HamburgerMenuProps) {
                 />
             </button>
         </div>
-    )
+    );
 }

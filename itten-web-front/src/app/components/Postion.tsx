@@ -2,18 +2,18 @@ type Position = {
     /**
      * ラベル（一文字）
      */
-    label: string
+    label: string;
 
     /**
      * 名前
      */
-    name: string
+    name: string;
 
     /**
      * 表示するときの文字色
      */
-    color: string
-}
+    color: string;
+};
 
 /**
  * ポジションの一覧データ
@@ -69,14 +69,14 @@ export const positionsMaster: Dictionary<Position> = {
         name: 'ライト',
         color: '#5ec53e',
     },
-}
+};
 
 type PostionProps = {
     /**
      * ポジション番号
      */
-    positionNumber: string
-}
+    positionNumber: string;
+};
 
 /**
  * ポジションを表すラベル
@@ -86,13 +86,13 @@ type PostionProps = {
  * @param positionNumber ポジション番号
  */
 export const PostionLabel = ({ positionNumber }: PostionProps) => {
-    const postion = positionsMaster[positionNumber]
+    const postion = positionsMaster[positionNumber];
     const style = {
         color: postion.color,
-    }
+    };
     return (
         <span className='font-bold' style={style}>
             {postion.label}
         </span>
-    )
-}
+    );
+};

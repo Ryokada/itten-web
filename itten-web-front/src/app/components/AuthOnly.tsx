@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { useRouter, usePathname } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import React, { useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import React, { useEffect } from 'react';
 
 /**
  * ラップしたコンポーネントを認証済みユーザーのみ表示可能にするコンポーネント
@@ -10,17 +10,17 @@ import React, { useEffect } from 'react'
  * @param children
  */
 const AuthOnly = ({ children }: { children: React.ReactNode }) => {
-    const { status } = useSession()
-    const pathname = usePathname()
-    const router = useRouter()
+    const { status } = useSession();
+    const pathname = usePathname();
+    const router = useRouter();
 
     useEffect(() => {
         if (status === 'unauthenticated' && pathname != '/signin') {
-            router.push('/signin')
+            router.push('/signin');
         }
-    }, [router, pathname, status])
-    if (status === 'loading') return <p>Loading...</p>
-    if (status === 'authenticated') return children
-}
+    }, [router, pathname, status]);
+    if (status === 'loading') return <p>Loading...</p>;
+    if (status === 'authenticated') return children;
+};
 
-export default AuthOnly
+export default AuthOnly;
