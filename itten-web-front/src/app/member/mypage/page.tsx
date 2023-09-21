@@ -3,6 +3,7 @@ import { PageNotFoundError } from 'next/dist/shared/lib/utils'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { BigIcon } from '@/app/components/Icon'
+import { PostionLabel } from '@/app/components/Postion'
 import { dbAdmin } from '@/firebase/admin'
 import logo from '@public/itten-logo.png'
 
@@ -42,7 +43,16 @@ const Mypage = async () => {
                 <div className='text-lg'>{session.user.email}</div>
                 <div>
                     <p className='text-xs'>希望ポジション</p>
-                    <div className='text-lg'>{memberInfo.desiredPositions.join(', ')}</div>
+                    <div className='text-lg flex space-x-2 mb-1'>
+                        {memberInfo.desiredPositions.map((p, i) => {
+                            return (
+                                <div key={p}>
+                                    {i + 1}.
+                                    <PostionLabel positionNumber={p} />
+                                </div>
+                            )
+                        })}
+                    </div>
                     <div className='text-xs rounded bg-slate-300 p-2 h-20'>
                         <p className='text-clip overflow-scroll w-full h-full'>
                             {memberInfo.positionComment}
