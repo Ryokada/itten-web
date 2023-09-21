@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <body className={notoSansJp.className}>
                 <SessionProvider>
                     <Header />
-                    <div className='ph-16 bg-slate-200 min-h-screen'>{children}</div>
+                    <div className='mt-16 bg-slate-200 min-h-screen'>{children}</div>
                 </SessionProvider>
             </body>
         </html>
