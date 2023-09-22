@@ -110,9 +110,26 @@ App Routerに対応させる。上のブログはハンドラーの実装が対�
 以下を参考
 https://qiita.com/kage1020/items/8224efd0f3557256c541
 
+キモは
 
+`src\app\api\auth\[...nextauth]\route.ts`
 
+* authorizeでサインインのときの処理をしている
+* callbacksは認証に関するイベント処理的なもの
+  * [jwt](https://next-auth.js.org/configuration/callbacks#jwt-callback): トークン作成時や、セッションにアクセスされるとき
+    * 引数のuserはauthorizeで返却したもの方はUser
+    * ここで返却した値が、sessionコールバックのtokenに渡される
+  * [session](https://next-auth.js.org/configuration/callbacks#session-callback): セッションがチェックされるとき
+    * ここで返却した値が、利用時のuseSession()の戻り値になる
 
+ また、TypeScriptコンパイルできるようにするため、型を拡張している
+`types\next-auth.d.ts`
+
+#### 認証が必要な画面
+
+対象のコンポーネントを`src\app\components\AuthOnly.tsx`のでラップする
+
+URL **/member** 以下のパスは、`src\app\member\layout.tsx`で設定しているので、配下のすべてのページは認証されていないとサインイン画面にリダイレクトする。
 
 
 

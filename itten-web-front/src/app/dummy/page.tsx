@@ -1,5 +1,5 @@
-import ClientComponent from './ClientComponent'
-import ServerComponent from './ServerComponent'
+import ClientComponent from './ClientComponent';
+import ServerComponent from './ServerComponent';
 
 const Dummy = () => {
     return (
@@ -7,7 +7,7 @@ const Dummy = () => {
             <ClientComponent />
             <ServerComponent />
         </main>
-    )
-}
+    );
+};
 
-export default Dummy
+export default Dummy;
