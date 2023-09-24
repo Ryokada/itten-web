@@ -1,4 +1,5 @@
 import { CollectionReference } from 'firebase-admin/firestore';
+import type { Metadata } from 'next';
 import { PageNotFoundError } from 'next/dist/shared/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -11,6 +12,11 @@ import { dbAdmin } from '@/firebase/admin';
 import logo from '@public/itten-logo.png';
 import lineLogo from '@public/line/btn_base.png';
 import lineLinkLogo from '@public/line/btn_login_base.png';
+
+export const metadata: Metadata = {
+    title: '一天マイページ',
+    description: '一天メンバー用のマイページです',
+};
 
 /**
  * メンバー用のマイページコンポーネントです
