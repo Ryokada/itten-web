@@ -33,7 +33,7 @@ const SingIn = () => {
 
     const signOut = async () => {
         await singOutByFirebase(auth);
-        signOutByNextAuth({ redirect: true, callbackUrl: '/' });
+        await signOutByNextAuth({ redirect: true, callbackUrl: '/' });
     };
     return (
         <main className='flex min-h-screen flex-col items-center'>

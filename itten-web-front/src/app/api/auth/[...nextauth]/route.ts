@@ -1,8 +1,7 @@
 import NextAuth from 'next-auth';
 import type { NextAuthOptions, User } from 'next-auth';
-
 import CredentialsProvider from 'next-auth/providers/credentials';
-
+import { v4 as uuidv4 } from 'uuid';
 import { authAdmin } from '@/firebase/admin';
 
 export const authOptions: NextAuthOptions = {
@@ -17,6 +16,7 @@ export const authOptions: NextAuthOptions = {
                 if (credentials?.idToken) {
                     try {
                         const decoded = await authAdmin.verifyIdToken(credentials?.idToken);
+                        const sessionStateId = uuidv4();
                         return {
                             uid: decoded.uid,
                             id: decoded.uid,
@@ -24,6 +24,7 @@ export const authOptions: NextAuthOptions = {
                             image: decoded.picture || '',
                             name: decoded.name || '',
                             emailVerified: decoded.emailVerified || false,
+                            sessionStateId: sessionStateId,
                         };
                     } catch (err) {
                         console.error(err);
@@ -45,6 +46,7 @@ export const authOptions: NextAuthOptions = {
                     token.emailVerified = user.emailVerified ?? false;
                 }
                 token.uid = user.id;
+                token.sessionStateId = user.sessionStateId;
             }
             return token;
         },
@@ -52,6 +54,7 @@ export const authOptions: NextAuthOptions = {
         async session({ session, token }) {
             session.user.emailVerified = token.emailVerified;
             session.user.uid = token.uid ?? token.sub;
+            session.user.sessionStateId = token.sessionStateId;
             return session;
         },
     },

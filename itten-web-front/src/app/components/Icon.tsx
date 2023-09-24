@@ -12,7 +12,13 @@ export type IconProps = {
 export const BigIcon = ({ src, alt }: IconProps) => {
     return (
         <div className='rounded-full w-32 h-32 overflow-hidden'>
-            <Image src={src} alt={alt} className='w-full h-full object-cover' />
+            <Image
+                src={src}
+                alt={alt}
+                className='w-full h-full object-cover'
+                width={128}
+                height={128}
+            />
         </div>
     );
 };
