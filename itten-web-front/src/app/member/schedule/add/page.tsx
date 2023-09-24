@@ -1,8 +1,15 @@
 'use client';
 
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import type { Metadata } from 'next';
-import { useForm, Controller } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
+import { useForm, useWatch, Controller } from 'react-hook-form';
 import scheduleTypes from '../scheduleTypes';
+import Spinner from '@/app/components/Spinner';
+import { convertDatetimeLocalInputText } from '@/app/utiles/datetimeUtil';
+import { db } from '@/firebase/client';
 
 export const metadata: Metadata = {
     title: '一天スケジュール',
@@ -10,11 +17,16 @@ export const metadata: Metadata = {
 };
 
 const ScheduleAdd = () => {
+    const { data: session } = useSession();
+    if (!session) {
+        return <Spinner />;
+    }
+
     return (
         <main className='min-h-screen py-5 px-10'>
             <div className='max-w-xl w-full mx-auto'>
                 <h1 className='mb-10 font-bold text-lg'>スケジュール追加</h1>
-                <ScheduleForm />
+                <ScheduleForm userId={session.user.uid} />
             </div>
         </main>
     );
@@ -22,26 +34,82 @@ const ScheduleAdd = () => {
 
 export default ScheduleAdd;
 
-const ScheduleForm = () => {
+type ScheduleTnput = {
+    title: string;
+    placeName: string;
+    startTimestamp: Date;
+    endTimestamp: Date;
+    type: string;
+    vs?: string;
+    memo: string;
+    isHome: boolean;
+};
+
+type ScheduleFormProps = {
+    userId: string;
+};
+const ScheduleForm = ({ userId }: ScheduleFormProps) => {
+    const router = useRouter();
     const {
         register,
         handleSubmit,
         control,
         setValue,
-        watch,
+        getValues,
         formState: { errors },
-    } = useForm<Schedule>();
+    } = useForm<ScheduleTnput>();
 
-    const watchIsHome = watch('isHome', true);
+    const watchIsHome = useWatch({
+        control,
+        name: 'isHome',
+        defaultValue: true,
+    });
 
-    const onSubmit = (data: Schedule) => {
-        console.log(data);
+    const watchStartTimestamp = useWatch({
+        control,
+        name: 'startTimestamp',
+    });
+
+    const onSubmit = async (inputData: ScheduleTnput) => {
+        const newSchedule = {
+            ...inputData,
+            startTimestamp: Timestamp.fromDate(inputData.startTimestamp),
+            endTimestamp: Timestamp.fromDate(inputData.endTimestamp),
+            isConfirmed: false,
+            createdBy: userId,
+            updatredBy: userId,
+        };
+        const schedulesCollection = collection(db, 'schedules');
+        const deoRef = await addDoc(schedulesCollection, newSchedule);
+        console.log('新しいスケジュールを作成しました。', deoRef);
+        // スクロールが戻らない
+        // router.push('/member/schedule', { scroll: true });
+        window.location.href = '/member/schedule';
     };
 
     const toDatetimeLocal = (date: Date) => {
         if (!date) return '';
-        return date.toISOString().slice(0, 16);
+        return convertDatetimeLocalInputText(date);
     };
+
+    /**
+     * 開始時刻の入力後、終了時刻を自動的に入力サポート
+     */
+    useEffect(() => {
+        if (!watchStartTimestamp) return;
+
+        let distanse = 2;
+        const end = getValues('endTimestamp');
+        if (end) {
+            distanse = end.getHours() - watchStartTimestamp.getHours();
+            if (distanse < 0) {
+                distanse = 2;
+            }
+        }
+        const startDate = new Date(watchStartTimestamp);
+        startDate.setHours(startDate.getHours() + distanse);
+        setValue('endTimestamp', startDate);
+    }, [watchStartTimestamp, setValue, getValues]);
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className='p-4 space-y-4 bg-gray-100'>
@@ -127,6 +195,7 @@ const ScheduleForm = () => {
                     render={({ field }) => (
                         <input
                             type='datetime-local'
+                            min='2023-04-01T00:00'
                             value={toDatetimeLocal(field.value)}
                             onChange={(e) => setValue('startTimestamp', new Date(e.target.value))}
                             className='p-2 border rounded-md'
@@ -147,6 +216,7 @@ const ScheduleForm = () => {
                     render={({ field }) => (
                         <input
                             type='datetime-local'
+                            min='2023-04-01T00:00'
                             value={toDatetimeLocal(field.value)}
                             onChange={(e) => setValue('endTimestamp', new Date(e.target.value))}
                             className='p-2 border rounded-md'
