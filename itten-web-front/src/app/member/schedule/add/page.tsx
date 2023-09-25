@@ -1,5 +1,6 @@
 'use client';
 
+import dayjs from 'dayjs';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import type { Metadata } from 'next';
 import { useRouter } from 'next/navigation';
@@ -8,7 +9,6 @@ import { useEffect } from 'react';
 import { useForm, useWatch, Controller } from 'react-hook-form';
 import scheduleTypes from '../scheduleTypes';
 import Spinner from '@/app/components/Spinner';
-import { convertDatetimeLocalInputText } from '@/app/utiles/datetimeUtil';
 import { db } from '@/firebase/client';
 
 export const metadata: Metadata = {
@@ -89,7 +89,7 @@ const ScheduleForm = ({ userId }: ScheduleFormProps) => {
 
     const toDatetimeLocal = (date: Date) => {
         if (!date) return '';
-        return convertDatetimeLocalInputText(date);
+        return dayjs(date).format('YYYY-MM-DDTHH:mm');
     };
 
     /**
@@ -98,16 +98,16 @@ const ScheduleForm = ({ userId }: ScheduleFormProps) => {
     useEffect(() => {
         if (!watchStartTimestamp) return;
 
-        let distanse = 2;
+        let intarval = 2;
         const end = getValues('endTimestamp');
         if (end) {
-            distanse = end.getHours() - watchStartTimestamp.getHours();
-            if (distanse < 0) {
-                distanse = 2;
+            intarval = end.getHours() - watchStartTimestamp.getHours();
+            if (intarval < 0) {
+                intarval = 2;
             }
         }
         const startDate = new Date(watchStartTimestamp);
-        startDate.setHours(startDate.getHours() + distanse);
+        startDate.setHours(startDate.getHours() + intarval);
         setValue('endTimestamp', startDate);
     }, [watchStartTimestamp, setValue, getValues]);
 

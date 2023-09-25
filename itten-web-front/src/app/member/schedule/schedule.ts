@@ -1,4 +1,6 @@
-type Schedule = {
+import { Timestamp } from 'firebase/firestore';
+
+export type ScheduleDoc = {
     /**
      * タイトル
      */
@@ -12,12 +14,12 @@ type Schedule = {
     /**
      * 開始日時
      */
-    startTimestamp: Date;
+    startTimestamp: Timestamp;
 
     /**
      * 終了日時
      */
-    endTimestamp: Date;
+    endTimestamp: Timestamp;
 
     /**
      * スケジュールのタイプ
