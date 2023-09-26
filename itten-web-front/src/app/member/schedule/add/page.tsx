@@ -49,7 +49,6 @@ type ScheduleFormProps = {
     userId: string;
 };
 const ScheduleForm = ({ userId }: ScheduleFormProps) => {
-    const router = useRouter();
     const {
         register,
         handleSubmit,
