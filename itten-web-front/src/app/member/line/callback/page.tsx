@@ -23,7 +23,8 @@ const LineCallback = () => {
     const stateParam = searchParams.get('state');
     const errorParam = searchParams.get('error');
     const errorDescriptionParam = searchParams.get('error_description');
-    const session = useSession();
+
+    const { data: session } = useSession();
 
     console.log('codeParam', codeParam);
     console.log('stateParam', stateParam);
@@ -35,8 +36,8 @@ const LineCallback = () => {
     useEffect(() => {
         if (errorParam) return;
         if (!codeParam) return;
-        if (!session.data?.user.sessionStateId) return;
-        if (stateParam !== session.data.user.sessionStateId) {
+        if (!session?.user.sessionStateId) return;
+        if (stateParam !== session.user.sessionStateId) {
             console.error('不正な遷移です');
             return;
         }
@@ -48,10 +49,11 @@ const LineCallback = () => {
                 console.error('不正な遷移です');
                 return;
             }
+
             setLineProfile(lineToken);
             console.log('LINE ID トークンを取得しました', lineToken);
 
-            const docRef = doc(db, 'members', session.data.user.uid) as DocumentReference<Member>;
+            const docRef = doc(db, 'members', session.user.uid) as DocumentReference<Member>;
             const docSnap = await getDoc(docRef);
             const memberInfo = docSnap.data();
             if (!memberInfo) {
@@ -61,10 +63,17 @@ const LineCallback = () => {
 
             memberInfo.imageUrl = lineToken.picture;
             memberInfo.lineId = lineToken.sub;
+            memberInfo.lineName = lineToken.name;
             await setDoc(docRef, memberInfo);
+
+            // 本来はここで、セッションの画像情報も更新するべきなのだが、
+            // ここでuseSession().update()を呼ぶと画面が2回レンダリングされてしまい、
+            // LINEトークンの取得で死ぬのでやらない
+
             console.log('LINE ID トークンを一天Webに登録しました', lineToken);
         })();
     }, [errorParam, codeParam, stateParam, session]);
+
     if (errorParam) {
         console.error('エラー', { error: errorParam, discription: errorDescriptionParam });
         return <LineAuthError />;

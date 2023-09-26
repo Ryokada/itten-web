@@ -21,6 +21,9 @@ const ScheduleAdd = () => {
             isConfirmed: false,
             createdBy: session.user.uid,
             updatredBy: session.user.uid,
+            okMembers: [],
+            ngMembers: [],
+            holdMembers: [],
         };
         const schedulesCollection = collection(db, 'schedules');
         const deoRef = await addDoc(schedulesCollection, newSchedule);
