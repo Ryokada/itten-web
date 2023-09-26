@@ -135,9 +135,7 @@ const MypageEdit = () => {
                             className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
                             {...register('name', { required: true, maxLength: 50 })}
                         />
-                        {errors.name && (
-                            <span className='text-red-500 text-xs'>This field is required</span>
-                        )}
+                        {errors.name && <span className='text-red-500 text-xs'>必須です</span>}
                     </div>
 
                     <div className='mb-4'>

@@ -59,10 +59,15 @@ const Mypage = async () => {
                 </div>
                 <div className='mt-5'>
                     {memberInfo.lineId ? (
-                        <div className='flex items-center'>
-                            <Image src={lineLogo} alt='line-login' className='w-5 h-5 mr-2' />
-                            <p className='text-gray-700 text-sm'>連係済み</p>
-                        </div>
+                        <>
+                            <div className='flex items-center'>
+                                <Image src={lineLogo} alt='line-login' className='w-5 h-5 mr-2' />
+                                <p className='mr-1 text-gray-700 text-sm'>連係済み</p>
+                            </div>
+                            <a href={lineLink} className='text-xs text-gray-500 cursor-pointer'>
+                                {'再連携はこちら >'}
+                            </a>
+                        </>
                     ) : (
                         <a href={lineLink}>
                             <Image src={lineLinkLogo} alt='line-login' className='w-1/5 h-1/5' />

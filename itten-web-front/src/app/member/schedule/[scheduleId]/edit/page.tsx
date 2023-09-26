@@ -1,6 +1,6 @@
 'use client';
 
-import { collection, Timestamp, DocumentReference, doc, getDoc, setDoc } from 'firebase/firestore';
+import { Timestamp, DocumentReference, doc, getDoc, setDoc } from 'firebase/firestore';
 import type { Metadata } from 'next';
 import { PageNotFoundError } from 'next/dist/shared/lib/utils';
 import { useSession } from 'next-auth/react';
