@@ -17,9 +17,14 @@ type Member = {
     number: string;
 
     /**
-     * 通知用のLINEID
+     * LINEID
      */
     lineId?: string;
+
+    /**
+     * LINE名
+     */
+    lineName?: string;
 
     /**
      * アイコン画像のURL

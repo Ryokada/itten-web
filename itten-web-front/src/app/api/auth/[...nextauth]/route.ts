@@ -1,8 +1,9 @@
+import { CollectionReference } from 'firebase-admin/firestore';
 import NextAuth from 'next-auth';
 import type { NextAuthOptions, User } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { v4 as uuidv4 } from 'uuid';
-import { authAdmin } from '@/firebase/admin';
+import { authAdmin, dbAdmin } from '@/firebase/admin';
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -16,13 +17,20 @@ export const authOptions: NextAuthOptions = {
                 if (credentials?.idToken) {
                     try {
                         const decoded = await authAdmin.verifyIdToken(credentials?.idToken);
+                        const memberCollection = dbAdmin.collection(
+                            'members',
+                        ) as CollectionReference<Member>;
+                        const userDocRef = memberCollection.doc(decoded.uid);
+                        const docSnap = await userDocRef.get();
+                        const memberInfo = docSnap.data();
                         const sessionStateId = uuidv4();
+
                         return {
                             uid: decoded.uid,
                             id: decoded.uid,
                             email: decoded.email || '',
-                            image: decoded.picture || '',
-                            name: decoded.name || '',
+                            image: memberInfo?.imageUrl || decoded.picture || '',
+                            name: memberInfo?.name || decoded.name || '',
                             emailVerified: decoded.emailVerified || false,
                             sessionStateId: sessionStateId,
                         };
@@ -38,7 +46,11 @@ export const authOptions: NextAuthOptions = {
         strategy: 'jwt',
     },
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, session }) {
+            if (session?.user) {
+                token.name = session.user.name;
+                token.picture = session.user.image;
+            }
             if (user) {
                 if (user.emailVerified instanceof Date) {
                     token.emailVerified = true;
@@ -52,9 +64,12 @@ export const authOptions: NextAuthOptions = {
         },
         // sessionにJWTトークンからのユーザ情報を格納
         async session({ session, token }) {
+            console.log('callback session', session, token);
             session.user.emailVerified = token.emailVerified;
             session.user.uid = token.uid ?? token.sub;
             session.user.sessionStateId = token.sessionStateId;
+            session.user.name = token.name;
+            session.user.image = token.picture;
             return session;
         },
     },

@@ -1,6 +1,7 @@
 'use client';
 
 import { DocumentReference, doc, getDoc, setDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
@@ -20,7 +21,8 @@ type MemberProfileInput = {
  * プロフィール更新画面
  */
 const MypageEdit = () => {
-    const { data: session } = useSession();
+    const router = useRouter();
+    const { data: session, update } = useSession();
     const [memberDocRef, setMemberDocRef] = useState<DocumentReference<Member>>();
     const [member, setMember] = useState<Member>();
     const [positionInputs, setPositionInputs] = useState<string[]>([]);
@@ -59,11 +61,10 @@ const MypageEdit = () => {
     };
 
     const onSubmit: SubmitHandler<MemberProfileInput> = async (data) => {
-        if (!member || !data || !memberDocRef) return;
+        if (!session || !member || !data || !memberDocRef) return;
 
         try {
             setDisabledSubmit(true);
-            setMessage('');
             const updatedPositions = [...positionInputs];
             data.desiredPositions = updatedPositions.filter((i) => i !== '');
             console.log(data);
@@ -75,7 +76,12 @@ const MypageEdit = () => {
                 positionComment: data.positionComment,
             };
             await setDoc(memberDocRef, updateMember);
+            update({
+                user: { ...session.user, name: updateMember.name },
+            });
             setMessage('変更しました');
+            router.push('/member/mypage');
+            router.refresh();
         } catch (e) {
             console.error(e);
             setMessage('変更に失敗しました');
