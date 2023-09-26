@@ -155,7 +155,6 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
         (async () => {
             const docSnap = await getDoc(docRef);
             const scheduleInfo = docSnap.data();
-            console.log('scheduleInfo', scheduleInfo);
             if (scheduleInfo) {
                 setSchedule(scheduleInfo);
             } else {
@@ -163,10 +162,6 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
             }
         })();
     }, [params.scheduleId]);
-
-    useEffect(() => {
-        console.log('session', session);
-    }, [session]);
 
     if (!schedule) {
         return <Spinner />;
