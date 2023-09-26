@@ -99,6 +99,9 @@ const Mypage = async () => {
             <Link href='/member/mypage/edit' className='my-3 text-blue-600 font-bold'>
                 {'変更はこちら >'}
             </Link>
+            <Link href='/signout' className='my-3 text-gray-600 font-bold'>
+                {'ログアウト >'}
+            </Link>
         </main>
     );
 };
