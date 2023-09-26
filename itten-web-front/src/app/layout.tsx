@@ -24,7 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <body className={notoSansJp.className}>
                 <SessionProvider>
                     <Header />
-                    <div className='mt-16 bg-slate-200 min-h-screen'>{children}</div>
+                    {/* top要素を作っておいてここにリンクすることで強制的に戦闘にスクロールさせる */}
+                    <div id='top' className='h-px bg-slate-200'></div>
+                    <div className='pt-16 bg-slate-200 min-h-screen'>{children}</div>
                 </SessionProvider>
             </body>
         </html>

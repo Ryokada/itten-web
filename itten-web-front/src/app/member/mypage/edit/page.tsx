@@ -1,6 +1,7 @@
 'use client';
 
 import { DocumentReference, doc, getDoc, setDoc } from 'firebase/firestore';
+import type { Metadata } from 'next';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
@@ -14,6 +15,11 @@ type MemberProfileInput = {
     imageUrl?: string;
     desiredPositions: Array<string>;
     positionComment?: string;
+};
+
+export const metadata: Metadata = {
+    title: '一天マイページ編集',
+    description: '一天メンバー用のマイページ編集画面です',
 };
 
 /**
@@ -129,9 +135,7 @@ const MypageEdit = () => {
                             className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
                             {...register('name', { required: true, maxLength: 50 })}
                         />
-                        {errors.name && (
-                            <span className='text-red-500 text-xs'>This field is required</span>
-                        )}
+                        {errors.name && <span className='text-red-500 text-xs'>必須です</span>}
                     </div>
 
                     <div className='mb-4'>
