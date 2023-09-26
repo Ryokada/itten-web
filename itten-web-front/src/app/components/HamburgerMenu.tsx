@@ -26,7 +26,7 @@ export default function HambugerMenu({ links }: HamburgerMenuProps) {
                 <ul className='mt-6'>
                     {links.map((value, index) => (
                         <li key={`md-menu-${index}`} className='p-4'>
-                            <Link href={value.href} onClick={() => setIsOpen(false)}>
+                            <Link href={`${value.href}#top`} onClick={() => setIsOpen(false)}>
                                 {value.label}{' '}
                             </Link>
                         </li>

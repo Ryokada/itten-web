@@ -3,8 +3,8 @@ import ja from 'dayjs/locale/ja';
 import { CollectionReference } from 'firebase-admin/firestore';
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 import { ScheduleDoc } from './schedule';
-import scheduleTypes from './scheduleTypes';
 import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
 import { dbAdmin } from '@/firebase/admin';
 import locationIcon from '@public/icons/location_on.svg';
@@ -50,7 +50,7 @@ const ScheduleRow = ({ id, schedule }: ScheduleRowProps) => {
     const endTsDayjs = dayjs(schedule.endTimestamp.toDate());
 
     return (
-        <a href={`/member/schedule/${id}`} className='cursor-pointer'>
+        <Link href={`/member/schedule/${id}`} className='cursor-pointer'>
             <div className='flex border-b border-slate-300 py-4 px-2'>
                 <div className='flex flex-col justify-center items-center mr-5'>
                     <div className='mb-1 rounded-full bg-white w-12 h-12 p-1 text-center leading-10 font-bold'>
@@ -80,6 +80,6 @@ const ScheduleRow = ({ id, schedule }: ScheduleRowProps) => {
                     </div>
                 </div>
             </div>
-        </a>
+        </Link>
     );
 };

@@ -1,6 +1,7 @@
 'use client';
 
 import { DocumentReference, doc, getDoc, setDoc } from 'firebase/firestore';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
@@ -88,9 +89,9 @@ const LineCallback = () => {
                         <div className=''>{lineProfile.name}</div>
                     </div>
                     <div>
-                        <a href='/member/mypage' className='text-blue-600 font-bold'>
+                        <Link href='/member/mypage' className='text-blue-600 font-bold'>
                             マイページへ戻る
-                        </a>
+                        </Link>
                     </div>
                 </>
             )}
