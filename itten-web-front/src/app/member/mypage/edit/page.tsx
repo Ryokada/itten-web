@@ -1,7 +1,6 @@
 'use client';
 
 import { DocumentReference, doc, getDoc, setDoc } from 'firebase/firestore';
-import type { Metadata } from 'next';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
@@ -15,11 +14,6 @@ type MemberProfileInput = {
     imageUrl?: string;
     desiredPositions: Array<string>;
     positionComment?: string;
-};
-
-export const metadata: Metadata = {
-    title: '一天マイページ編集',
-    description: '一天メンバー用のマイページ編集画面です',
 };
 
 /**

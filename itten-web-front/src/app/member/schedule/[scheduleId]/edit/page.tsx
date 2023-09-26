@@ -1,7 +1,6 @@
 'use client';
 
 import { Timestamp, DocumentReference, doc, getDoc, setDoc } from 'firebase/firestore';
-import type { Metadata } from 'next';
 import { PageNotFoundError } from 'next/dist/shared/lib/utils';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
@@ -9,11 +8,6 @@ import ScheduleForm, { ScheduleTnput } from '../../ScheduleForm';
 import { ScheduleDoc } from '../../schedule';
 import Spinner from '@/app/components/Spinner';
 import { db } from '@/firebase/client';
-
-export const metadata: Metadata = {
-    title: '一天スケジュール',
-    description: '一天メンバー用のスケジュール更新ページです',
-};
 
 type ScheduleEditProps = {
     params: {
