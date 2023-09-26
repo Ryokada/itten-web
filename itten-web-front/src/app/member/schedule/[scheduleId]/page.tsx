@@ -3,12 +3,12 @@
 import dayjs from 'dayjs';
 
 import ja from 'dayjs/locale/ja';
-import { DocumentReference, doc, getDoc, setDoc } from 'firebase/firestore';
+import { DocumentReference, doc, getDoc } from 'firebase/firestore';
 import { PageNotFoundError } from 'next/dist/shared/lib/utils';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ScheduleDoc } from '../schedule';
-import scheduleTypes from '../scheduleTypes';
 import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
 import Spinner from '@/app/components/Spinner';
 import { db } from '@/firebase/client';
@@ -85,6 +85,15 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 ) : (
                     <div className='text-sm'>{'(ビジター)'}</div>
                 )}
+                <div className='my-2 mx-1 p-2 bg-gray-100 rounded'>
+                    {schedule.memo ?? 'とくになし'}
+                </div>
+                <Link
+                    href={`/member/schedule/${params.scheduleId}/edit`}
+                    className='block text-center mx-auto mt-10 w-1/2 p-2 bg-green-500 text-white rounded-md hover:bg-green-600'
+                >
+                    編集はこちら
+                </Link>
             </div>
         </main>
     );
