@@ -1,4 +1,5 @@
-import { Timestamp } from 'firebase/firestore';
+import { DocumentReference, Timestamp } from 'firebase/firestore';
+import { DocumentReference as AdminDocumentReference } from 'firebase-admin/firestore';
 
 export type ScheduleDoc = {
     /**
@@ -57,4 +58,29 @@ export type ScheduleDoc = {
      * 最終更新者
      */
     updatredBy: string;
+
+    /**
+     * 参加者
+     */
+    okMembers: Array<scheduledMember>;
+
+    /**
+     * 欠席者
+     */
+    ngMembers: Array<scheduledMember>;
+
+    /**
+     * 参加保留者
+     */
+    holdMembers: Array<scheduledMember>;
+};
+
+export type scheduledMember = {
+    ref?: DocumentReference<Member> | AdminDocumentReference<Member>;
+    id: string;
+    name: string;
+    imageUrl?: string;
+    memo?: string;
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
 };
