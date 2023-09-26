@@ -1,17 +1,11 @@
 'use client';
 
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import type { Metadata } from 'next';
 import { useSession } from 'next-auth/react';
 import ScheduleForm, { ScheduleTnput } from '../ScheduleForm';
 import { ScheduleDoc } from '../schedule';
 import Spinner from '@/app/components/Spinner';
 import { db } from '@/firebase/client';
-
-export const metadata: Metadata = {
-    title: '一天スケジュール',
-    description: '一天メンバー用のスケジュール作成ページです',
-};
 
 const ScheduleAdd = () => {
     const { data: session } = useSession();

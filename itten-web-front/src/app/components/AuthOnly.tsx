@@ -19,8 +19,10 @@ const AuthOnly = ({ children }: { children: React.ReactNode }) => {
             router.push('/signin');
         }
     }, [router, pathname, status]);
-    if (status === 'loading') return <p>Loading...</p>;
+
     if (status === 'authenticated') return children;
+
+    return <p>Loading...</p>;
 };
 
 export default AuthOnly;

@@ -5,18 +5,21 @@ import logo from '../../../public/itten-logo.png';
 import HambugerMenu from '@/app/components/HamburgerMenu';
 import useIsDesktop from '@/app/hooks/useIsDesktop';
 
+const menuLinks = [
+    { label: 'トップ', href: '/' },
+    { label: 'マイページ', href: '/member/mypage' },
+    { label: 'スケジュール', href: '/member/schedule' },
+    { label: 'スケジュール追加', href: '/member/schedule/add' },
+    { label: 'ログイン', href: '/signin' },
+    { label: 'ログアウト', href: '/signout' },
+];
+
 /**
  * 共通のヘッダーコンポーネントです
  * @returns
  */
 export default function Header() {
-    const menuLinks = [
-        { label: 'トップ', href: '/' },
-        { label: 'マイページ', href: '/member/mypage' },
-        { label: 'スケジュール', href: '/member/schedule' },
-        { label: 'スケジュール追加', href: '/member/schedule/add' },
-    ];
-    const [isDesktop, setIsDesktop] = useIsDesktop();
+    const [isDesktop] = useIsDesktop();
 
     return (
         <header>

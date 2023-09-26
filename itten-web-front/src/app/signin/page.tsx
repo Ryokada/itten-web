@@ -1,7 +1,7 @@
 'use client';
 
-import { signInWithEmailAndPassword, signOut as singOutByFirebase } from 'firebase/auth';
-import { signIn as signInByNextAuth, signOut as signOutByNextAuth } from 'next-auth/react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signIn as signInByNextAuth } from 'next-auth/react';
 
 import { useState } from 'react';
 import { auth } from '@/firebase/client';
@@ -12,12 +12,14 @@ import { auth } from '@/firebase/client';
 const SingIn = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [disabled, setDisabled] = useState(false);
 
     const signIn = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!email) return;
         if (!password) return;
 
+        setDisabled(true);
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const idToken = await userCredential.user.getIdToken();
@@ -28,12 +30,9 @@ const SingIn = () => {
         } catch (e) {
             console.error(e);
             // TODO: エラーメッセージ
+        } finally {
+            setDisabled(false);
         }
-    };
-
-    const signOut = async () => {
-        await singOutByFirebase(auth);
-        await signOutByNextAuth({ redirect: true, callbackUrl: '/' });
     };
     return (
         <main className='flex min-h-screen flex-col items-center'>
@@ -82,22 +81,13 @@ const SingIn = () => {
                     <div>
                         <button
                             type='submit'
-                            className='group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                            className='group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-30'
+                            disabled={disabled}
                         >
                             ログイン
                         </button>
                     </div>
                 </form>
-
-                <div>
-                    <button
-                        type='button'
-                        className='group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
-                        onClick={() => signOut()}
-                    >
-                        ログアウト
-                    </button>
-                </div>
             </div>
         </main>
     );

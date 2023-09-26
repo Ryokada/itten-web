@@ -1,4 +1,5 @@
 'use client';
+
 import Link from 'next/link';
 import React, { useState } from 'react';
 
@@ -25,14 +26,17 @@ export default function HambugerMenu({ links }: HamburgerMenuProps) {
             >
                 <ul className='mt-6'>
                     {links.map((value, index) => (
-                        <li key={`md-menu-${index}`} className='p-4'>
+                        <li key={`md-menu-${index}`} className='px-4 pt-6'>
                             <Link href={`${value.href}#top`} onClick={() => setIsOpen(false)}>
                                 {value.label}{' '}
                             </Link>
                         </li>
                     ))}
                     <li key='lg-menu-close'>
-                        <p onClick={toggleMenuOpen} className='p-4 text-gray-600 cursor-pointer'>
+                        <p
+                            onClick={toggleMenuOpen}
+                            className='mt-5 block p-4 text-gray-600 cursor-pointer'
+                        >
                             閉じる
                         </p>
                     </li>
