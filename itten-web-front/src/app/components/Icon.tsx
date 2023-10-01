@@ -22,3 +22,20 @@ export const BigIcon = ({ src, alt }: IconProps) => {
         </div>
     );
 };
+
+/**
+ * 小さいアイコンコンポーネント
+ */
+export const SmallIcon = ({ src, alt }: IconProps) => {
+    return (
+        <div className='rounded-full w-8 h-8 overflow-hidden'>
+            <Image
+                src={src}
+                alt={alt}
+                className='w-full h-full object-cover'
+                width={128}
+                height={128}
+            />
+        </div>
+    );
+};

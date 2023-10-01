@@ -62,20 +62,20 @@ export type ScheduleDoc = {
     /**
      * 参加者
      */
-    okMembers: Array<scheduledMember>;
+    okMembers: Array<ScheduledMember>;
 
     /**
      * 欠席者
      */
-    ngMembers: Array<scheduledMember>;
+    ngMembers: Array<ScheduledMember>;
 
     /**
      * 参加保留者
      */
-    holdMembers: Array<scheduledMember>;
+    holdMembers: Array<ScheduledMember>;
 };
 
-export type scheduledMember = {
+export type ScheduledMember = {
     ref?: DocumentReference<Member> | AdminDocumentReference<Member>;
     id: string;
     name: string;
@@ -84,3 +84,6 @@ export type scheduledMember = {
     createdAt: Timestamp;
     updatedAt: Timestamp;
 };
+
+export const comparAscScheduledMemberCreatedAt = (a: ScheduledMember, b: ScheduledMember): number =>
+    a.createdAt.toDate().getTime() - b.createdAt.toDate().getTime();
