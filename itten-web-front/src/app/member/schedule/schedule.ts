@@ -85,5 +85,53 @@ export type ScheduledMember = {
     updatedAt: Timestamp;
 };
 
+/**
+ * 時系列昇順にソートするための関数です。
+ *
+ * @param a
+ * @param b
+ * @returns
+ */
 export const comparAscScheduledMemberCreatedAt = (a: ScheduledMember, b: ScheduledMember): number =>
     a.createdAt.toDate().getTime() - b.createdAt.toDate().getTime();
+
+export type ScheduleStatus = 'ok' | 'ng' | 'hold' | null | undefined;
+
+export const getScheduleStatusLabel = (scheduleStatus: ScheduleStatus) => {
+    switch (scheduleStatus) {
+        case 'ok':
+            return '参加';
+        case 'ng':
+            return '欠席';
+        case 'hold':
+            return '保留';
+        default:
+            return '未回答';
+    }
+};
+
+/**
+ * 指定したユーザーのスケジュールの出欠登録状況を取得します
+ *
+ * @param userId 対象のユーザーID
+ * @param schedule 対象のスケジュール
+ * @returns 出欠状況。未登録の場合 null です。
+ */
+export const getScheduleState = (userId: string, schedule: ScheduleDoc): ScheduleStatus => {
+    const ok = schedule.okMembers.find((m) => m.id === userId);
+    if (ok) {
+        return 'ok';
+    }
+
+    const ng = schedule.ngMembers.find((m) => m.id === userId);
+    if (ng) {
+        return 'ng';
+    }
+
+    const hold = schedule.holdMembers.find((m) => m.id === userId);
+    if (hold) {
+        return 'hold';
+    }
+
+    return null;
+};

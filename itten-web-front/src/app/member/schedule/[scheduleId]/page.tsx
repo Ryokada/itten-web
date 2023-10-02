@@ -8,7 +8,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { ScheduleDoc, comparAscScheduledMemberCreatedAt, ScheduledMember } from '../schedule';
+import {
+    ScheduleDoc,
+    comparAscScheduledMemberCreatedAt,
+    ScheduledMember,
+    getScheduleState,
+    ScheduleStatus,
+    getScheduleStatusLabel,
+} from '../schedule';
 import { SmallIcon } from '@/app/components/Icon';
 import Message from '@/app/components/Message';
 import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
@@ -29,13 +36,15 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
     const { data: session } = useSession();
     const [scheduleDocRef, setScheduleDocRef] = useState<DocumentReference<ScheduleDoc>>();
     const [schedule, setSchedule] = useState<ScheduleDoc>();
-    const [members, sermembers] = useState<Member>();
+    const [members, setMembers] = useState<Member[]>([]);
+    const [scheduleStatus, setScheduleStatus] = useState<ScheduleStatus>();
     const [message, setMessage] = useState<string>('');
 
     const [disabledAttendance, setDisabledAttendance] = useState(false);
     const [disabledAbsence, setDisabledAbsence] = useState(false);
     const [disabledHold, setDisabledHold] = useState(false);
 
+    // TODO 要共通化
     const registAttendance = async () => {
         if (!scheduleDocRef || !schedule || !session) return;
 
@@ -62,15 +71,28 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 updatedAt: Timestamp.fromDate(now),
             };
 
+            const docSnap = await getDoc(scheduleDocRef);
+            const updateTarget = docSnap.data() ?? schedule;
+
+            const already = updateTarget.okMembers.find((m) => m.id === session.user.uid);
+            if (already) {
+                console.log('すでに参加済みです', updateTarget);
+                return;
+            }
+
             const newSchedule: ScheduleDoc = {
-                ...schedule,
+                ...updateTarget,
                 okMembers: [...schedule.okMembers, attendanse],
+                ngMembers: updateTarget.ngMembers.filter((m) => m.id !== session.user.uid),
+                holdMembers: updateTarget.holdMembers.filter((m) => m.id !== session.user.uid),
             };
-            const setDecRef = await setDoc(scheduleDocRef, newSchedule);
-            console.log('参加にしました。', setDecRef);
+            await setDoc(scheduleDocRef, newSchedule);
+            setSchedule(newSchedule);
+            console.log('参加にしました。', newSchedule);
             setMessage('「出席」登録しました。');
         } finally {
             setDisabledAttendance(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -100,15 +122,28 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 updatedAt: Timestamp.fromDate(now),
             };
 
+            const docSnap = await getDoc(scheduleDocRef);
+            const updateTarget = docSnap.data() ?? schedule;
+
+            const already = updateTarget.ngMembers.find((m) => m.id === session.user.uid);
+            if (already) {
+                console.log('すでに欠席済みです', updateTarget);
+                return;
+            }
+
             const newSchedule: ScheduleDoc = {
-                ...schedule,
+                ...updateTarget,
+                okMembers: updateTarget.okMembers.filter((m) => m.id !== session.user.uid),
                 ngMembers: [...schedule.ngMembers, absence],
+                holdMembers: updateTarget.holdMembers.filter((m) => m.id !== session.user.uid),
             };
-            const setDecRef = await setDoc(scheduleDocRef, newSchedule);
-            console.log('欠席にしました。', setDecRef);
+            await setDoc(scheduleDocRef, newSchedule);
+            setSchedule(newSchedule);
+            console.log('欠席にしました。', newSchedule);
             setMessage('「欠席」登録しました。');
         } finally {
             setDisabledAbsence(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -138,19 +173,33 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 updatedAt: Timestamp.fromDate(now),
             };
 
+            const docSnap = await getDoc(scheduleDocRef);
+            const updateTarget = docSnap.data() ?? schedule;
+
+            const already = updateTarget.holdMembers.find((m) => m.id === session.user.uid);
+            if (already) {
+                console.log('すでに保留済みです', updateTarget);
+                return;
+            }
+
             const newSchedule: ScheduleDoc = {
-                ...schedule,
+                ...updateTarget,
+                okMembers: updateTarget.okMembers.filter((m) => m.id !== session.user.uid),
+                ngMembers: updateTarget.ngMembers.filter((m) => m.id !== session.user.uid),
                 holdMembers: [...schedule.holdMembers, hold],
             };
-            const setDecRef = await setDoc(scheduleDocRef, newSchedule);
-            console.log('保留にしました。', setDecRef);
+            await setDoc(scheduleDocRef, newSchedule);
+            setSchedule(newSchedule);
+            console.log('保留にしました。', newSchedule);
             setMessage('「保留」登録しました。');
         } finally {
             setDisabledHold(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
     useEffect(() => {
+        if (!session) return;
         // TODO 共通化
         const docRef = doc(db, 'schedules', params.scheduleId) as DocumentReference<ScheduleDoc>;
         setScheduleDocRef(docRef);
@@ -159,6 +208,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
             const docSnap = await getDoc(docRef);
             const scheduleInfo = docSnap.data();
             if (scheduleInfo) {
+                // ここで出欠メンバーをソートしておく
                 scheduleInfo.okMembers.sort(comparAscScheduledMemberCreatedAt);
                 scheduleInfo.ngMembers.sort(comparAscScheduledMemberCreatedAt);
                 scheduleInfo.holdMembers.sort(comparAscScheduledMemberCreatedAt);
@@ -167,7 +217,13 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 throw new PageNotFoundError('schedule');
             }
         })();
-    }, [params.scheduleId]);
+    }, [session, params.scheduleId]);
+
+    useEffect(() => {
+        if (!session || !schedule) return;
+
+        setScheduleStatus(getScheduleState(session.user.uid, schedule));
+    }, [session, schedule]);
 
     if (!schedule) {
         return <Spinner />;
@@ -192,7 +248,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                         <div className='mb-1 text-6xl font-bold leading-none'>
                             {startTsDayjs.format('D')}
                         </div>
-                        <div className=''>{startTsDayjs.format('dd')}</div>
+                        <div className=''>{`（${startTsDayjs.format('dd')}）`}</div>
                     </div>
                     {/* 概要 */}
                     <div className='flex flex-col'>
@@ -222,6 +278,36 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 {/* スケジュール種別 */}
                 <ScheduleTypeLabel typeId={schedule.type} />
 
+                {/* 出欠登録ボタン */}
+                {!scheduleStatus && (
+                    <div className='w-full text-center font-bold rounded bg-yellow-400 p-1 border border-gray-400'>
+                        ⚠️ 出欠未登録です ⚠️
+                    </div>
+                )}
+                <div className='flex w-full space-x-3 my-5'>
+                    <button
+                        className='w-1/3 p-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-800 text-center cursor-pointer opacity-30 disabled:opacity-100 disabled:cursor-not-allowed'
+                        onClick={registAttendance}
+                        disabled={disabledAttendance || scheduleStatus === 'ok'}
+                    >
+                        参加
+                    </button>
+                    <button
+                        className='w-1/3 p-3 bg-teal-600 text-white rounded-md hover:bg-teal-800 text-center cursor-pointer opacity-30 disabled:opacity-100 disabled:cursor-not-allowed'
+                        onClick={registHold}
+                        disabled={disabledHold || scheduleStatus === 'hold'}
+                    >
+                        保留
+                    </button>
+                    <button
+                        className='w-1/3 p-3 bg-rose-600 text-white rounded-md hover:bg-rose-800 text-center cursor-pointer opacity-30 disabled:opacity-100 disabled:cursor-not-allowed'
+                        onClick={registAbsence}
+                        disabled={disabledAbsence || scheduleStatus === 'ng'}
+                    >
+                        欠席
+                    </button>
+                </div>
+
                 {/* 対戦相手 */}
                 {schedule.vs && <div className=''>vs {schedule.vs}</div>}
 
@@ -243,31 +329,6 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     <div>欠: {schedule.ngMembers.length} 人</div>
                     <div>保: {schedule.holdMembers.length} 人</div>
                     <div>未：</div>
-                </div>
-
-                {/* 出欠登録ボタン */}
-                <div className='flex w-full space-x-3 my-5'>
-                    <button
-                        className='w-1/3 p-4 bg-rose-600 text-white rounded-md hover:bg-rose-800 text-center cursor-pointer disabled:opacity-30'
-                        onClick={registAbsence}
-                        disabled={disabledAbsence}
-                    >
-                        欠席
-                    </button>
-                    <button
-                        className='w-1/3 p-4 bg-gray-600 text-white rounded-md hover:bg-gray-800 text-center cursor-pointer disabled:opacity-30'
-                        onClick={registHold}
-                        disabled={disabledHold}
-                    >
-                        保留
-                    </button>
-                    <button
-                        className='w-1/3 p-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-800 text-center cursor-pointer disabled:opacity-30'
-                        onClick={registAttendance}
-                        disabled={disabledAttendance}
-                    >
-                        参加
-                    </button>
                 </div>
 
                 <hr
@@ -318,9 +379,9 @@ const ScheduledMemberList = ({
             </div>
             {scheduledMembers.length > 0 ? (
                 <div className='flex flex-wrap mt-2'>
-                    {scheduledMembers.map((m) => {
+                    {scheduledMembers.map((m, i) => {
                         return (
-                            <div key={m.id} className='mt-2 mr-3'>
+                            <div key={`${m.id}_${i}`} className='mt-2 mr-3'>
                                 {m.imageUrl ? (
                                     <SmallIcon src={m.imageUrl} alt={m.name} />
                                 ) : (
