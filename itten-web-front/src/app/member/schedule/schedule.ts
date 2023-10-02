@@ -62,20 +62,20 @@ export type ScheduleDoc = {
     /**
      * 参加者
      */
-    okMembers: Array<scheduledMember>;
+    okMembers: Array<ScheduledMember>;
 
     /**
      * 欠席者
      */
-    ngMembers: Array<scheduledMember>;
+    ngMembers: Array<ScheduledMember>;
 
     /**
      * 参加保留者
      */
-    holdMembers: Array<scheduledMember>;
+    holdMembers: Array<ScheduledMember>;
 };
 
-export type scheduledMember = {
+export type ScheduledMember = {
     ref?: DocumentReference<Member> | AdminDocumentReference<Member>;
     id: string;
     name: string;
@@ -83,4 +83,61 @@ export type scheduledMember = {
     memo?: string;
     createdAt: Timestamp;
     updatedAt: Timestamp;
+};
+
+/**
+ * 時系列昇順にソートするための関数です。
+ *
+ * @param a
+ * @param b
+ * @returns
+ */
+export const comparAscScheduledMemberCreatedAt = (a: ScheduledMember, b: ScheduledMember): number =>
+    a.createdAt.toDate().getTime() - b.createdAt.toDate().getTime();
+
+export type ScheduleStatus = 'ok' | 'ng' | 'hold' | null | undefined;
+
+/**
+ * 指定したユーザーのスケジュールの出欠登録状況を取得します
+ *
+ * @param userId 対象のユーザーID
+ * @param schedule 対象のスケジュール
+ * @returns 出欠状況。未登録の場合 null です。
+ */
+export const getScheduleState = (userId: string, schedule: ScheduleDoc): ScheduleStatus => {
+    const ok = schedule.okMembers.find((m) => m.id === userId);
+    if (ok) {
+        return 'ok';
+    }
+
+    const ng = schedule.ngMembers.find((m) => m.id === userId);
+    if (ng) {
+        return 'ng';
+    }
+
+    const hold = schedule.holdMembers.find((m) => m.id === userId);
+    if (hold) {
+        return 'hold';
+    }
+
+    return null;
+};
+
+/**
+ * 出欠未回答ユーザーの一覧を取得します
+ *
+ * @param schedule 対象のスケジュール
+ * @param members 全メンバー（要ID）
+ * @returns
+ */
+export const getNoAnsweredMembers = (
+    schedule: ScheduleDoc,
+    members: Array<Member>,
+): Array<Member> => {
+    return members.filter(
+        (m) =>
+            !schedule.okMembers.some((ok) => m.id === ok.id) &&
+            !schedule.ngMembers.some((ng) => m.id === ng.id) &&
+            !schedule.holdMembers.some((hold) => m.id === hold.id),
+    );
 };
