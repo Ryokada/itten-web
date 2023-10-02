@@ -1,6 +1,13 @@
 'use client';
 
-import { Timestamp, DocumentReference, doc, getDoc, setDoc } from 'firebase/firestore';
+import {
+    Timestamp,
+    DocumentReference,
+    doc,
+    getDoc,
+    setDoc,
+    runTransaction,
+} from 'firebase/firestore';
 import { PageNotFoundError } from 'next/dist/shared/lib/utils';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
@@ -23,16 +30,25 @@ const ScheduleEdit = ({ params }: ScheduleEditProps) => {
     const onSubmit = async (inputData: ScheduleTnput) => {
         if (!session || !schedule || !scheduleDocRef) return;
 
-        const newSchedule: ScheduleDoc = {
-            ...schedule,
-            ...inputData,
-            startTimestamp: Timestamp.fromDate(inputData.startTimestamp),
-            endTimestamp: Timestamp.fromDate(inputData.endTimestamp),
-            isConfirmed: false,
-            updatredBy: session.user.uid,
-        };
-        const deoRef = await setDoc(scheduleDocRef, newSchedule);
-        console.log('スケジュールを更新しました。', deoRef);
+        await runTransaction(db, async (transaction) => {
+            const sfDoc = await transaction.get(scheduleDocRef);
+            if (!sfDoc.exists()) {
+                throw Error('Document does not exist!');
+            }
+
+            const updateTarget = sfDoc.data();
+
+            const newSchedule: ScheduleDoc = {
+                ...updateTarget,
+                ...inputData,
+                startTimestamp: Timestamp.fromDate(inputData.startTimestamp),
+                endTimestamp: Timestamp.fromDate(inputData.endTimestamp),
+                isConfirmed: false,
+                updatredBy: session.user.uid,
+            };
+            transaction.update(scheduleDocRef, newSchedule);
+            console.log('スケジュールを更新しました。', newSchedule);
+        });
         // スクロールが戻らない
         // router.push('/member/schedule', { scroll: true });
         window.location.href = `/member/schedule/${params.scheduleId}`;

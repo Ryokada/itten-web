@@ -7,7 +7,6 @@ import {
     Timestamp,
     doc,
     getDoc,
-    setDoc,
     query,
     collection,
     CollectionReference,
