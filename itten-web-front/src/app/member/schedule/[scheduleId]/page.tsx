@@ -2,7 +2,17 @@
 
 import dayjs from 'dayjs';
 import ja from 'dayjs/locale/ja';
-import { DocumentReference, Timestamp, doc, getDoc, setDoc } from 'firebase/firestore';
+import {
+    DocumentReference,
+    Timestamp,
+    doc,
+    getDoc,
+    setDoc,
+    query,
+    collection,
+    CollectionReference,
+    getDocs,
+} from 'firebase/firestore';
 import { PageNotFoundError } from 'next/dist/shared/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -15,6 +25,7 @@ import {
     getScheduleState,
     ScheduleStatus,
     getScheduleStatusLabel,
+    getNoAnsweredMembers,
 } from '../schedule';
 import { SmallIcon } from '@/app/components/Icon';
 import Message from '@/app/components/Message';
@@ -202,6 +213,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
         if (!session) return;
         // TODO 共通化
         const docRef = doc(db, 'schedules', params.scheduleId) as DocumentReference<ScheduleDoc>;
+        const membersQuery = query(collection(db, 'members')) as CollectionReference<Member>;
         setScheduleDocRef(docRef);
 
         (async () => {
@@ -216,6 +228,11 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
             } else {
                 throw new PageNotFoundError('schedule');
             }
+
+            const membersDocs = await getDocs(membersQuery);
+            const newMembers: Array<Member> = [];
+            membersDocs.forEach((d) => newMembers.push({ ...d.data(), id: d.id }));
+            setMembers(newMembers);
         })();
     }, [session, params.scheduleId]);
 
@@ -323,14 +340,6 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     {schedule.memo ? schedule.memo : '　'}
                 </div>
 
-                {/* 出欠人数まとめ */}
-                <div className='flex space-x-2'>
-                    <div>出: {schedule.okMembers.length} 人</div>
-                    <div>欠: {schedule.ngMembers.length} 人</div>
-                    <div>保: {schedule.holdMembers.length} 人</div>
-                    <div>未：</div>
-                </div>
-
                 <hr
                     className='h-px my-8
                  bg-gray-300 border-0'
@@ -349,6 +358,19 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     <ScheduledMemberList
                         title='保留メンバー'
                         scheduledMembers={schedule.holdMembers}
+                    />
+                    <ScheduledMemberList
+                        title='未登録メンバー'
+                        scheduledMembers={getNoAnsweredMembers(schedule, members).map((m) => {
+                            const dummyTimestamp = Timestamp.now();
+                            return {
+                                id: m.id,
+                                name: m.name,
+                                imageUrl: m.imageUrl,
+                                createdAt: dummyTimestamp,
+                                updatedAt: dummyTimestamp,
+                            };
+                        })}
                     />
                 </div>
                 <Link
@@ -381,7 +403,7 @@ const ScheduledMemberList = ({
                 <div className='flex flex-wrap mt-2'>
                     {scheduledMembers.map((m, i) => {
                         return (
-                            <div key={`${m.id}_${i}`} className='mt-2 mr-3'>
+                            <div key={`${m.id}`} className='mt-2 mr-3'>
                                 {m.imageUrl ? (
                                     <SmallIcon src={m.imageUrl} alt={m.name} />
                                 ) : (

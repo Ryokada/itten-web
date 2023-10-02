@@ -97,6 +97,12 @@ export const comparAscScheduledMemberCreatedAt = (a: ScheduledMember, b: Schedul
 
 export type ScheduleStatus = 'ok' | 'ng' | 'hold' | null | undefined;
 
+/**
+ * ScheduleStatus の値から出欠状況の日本語表示を取得します
+ *
+ * @param scheduleStatus
+ * @returns
+ */
 export const getScheduleStatusLabel = (scheduleStatus: ScheduleStatus) => {
     switch (scheduleStatus) {
         case 'ok':
@@ -134,4 +140,23 @@ export const getScheduleState = (userId: string, schedule: ScheduleDoc): Schedul
     }
 
     return null;
+};
+
+/**
+ * 出欠未回答ユーザーの一覧を取得します
+ *
+ * @param schedule 対象のスケジュール
+ * @param members 全メンバー（要ID）
+ * @returns
+ */
+export const getNoAnsweredMembers = (
+    schedule: ScheduleDoc,
+    members: Array<Member>,
+): Array<Member> => {
+    return members.filter(
+        (m) =>
+            !schedule.okMembers.some((ok) => m.id === ok.id) &&
+            !schedule.ngMembers.some((ng) => m.id === ng.id) &&
+            !schedule.holdMembers.some((hold) => m.id === hold.id),
+    );
 };
