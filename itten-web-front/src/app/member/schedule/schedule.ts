@@ -98,25 +98,6 @@ export const comparAscScheduledMemberCreatedAt = (a: ScheduledMember, b: Schedul
 export type ScheduleStatus = 'ok' | 'ng' | 'hold' | null | undefined;
 
 /**
- * ScheduleStatus の値から出欠状況の日本語表示を取得します
- *
- * @param scheduleStatus
- * @returns
- */
-export const getScheduleStatusLabel = (scheduleStatus: ScheduleStatus) => {
-    switch (scheduleStatus) {
-        case 'ok':
-            return '参加';
-        case 'ng':
-            return '欠席';
-        case 'hold':
-            return '保留';
-        default:
-            return '未回答';
-    }
-};
-
-/**
  * 指定したユーザーのスケジュールの出欠登録状況を取得します
  *
  * @param userId 対象のユーザーID
