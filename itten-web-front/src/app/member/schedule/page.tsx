@@ -50,7 +50,12 @@ const ScheduleRow = ({ id, schedule }: ScheduleRowProps) => {
     const endTsDayjs = dayjs(schedule.endTimestamp.toDate());
 
     return (
-        <Link href={`/member/schedule/${id}`} className='cursor-pointer'>
+        <Link
+            href={`/member/schedule/${id}`}
+            className='cursor-pointer'
+            target='_blank'
+            rel='noopener noreferrer'
+        >
             <div className='flex border-b border-slate-300 py-4 px-2' id={id}>
                 <div className='flex flex-col justify-center items-center mr-5'>
                     <div className='mb-1 rounded-full bg-white w-12 h-12 p-1 text-center leading-10 font-bold'>
