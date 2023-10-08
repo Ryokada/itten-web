@@ -415,6 +415,7 @@ const ScheduledMemberList = ({
     scheduledMembers: Array<ScheduledMember>;
     title: string;
 }) => {
+    console.log(scheduledMembers);
     return (
         <div>
             <div className='flex'>
@@ -429,9 +430,9 @@ const ScheduledMemberList = ({
                                 {m.imageUrl ? (
                                     <SmallIcon src={m.imageUrl} alt={m.name} />
                                 ) : (
-                                    <div className='h-8 w-8 bg-gray-800'></div>
+                                    <div className='h-8 w-8 bg-gray-600 rounded-full'></div>
                                 )}
-                                <div className='text-sm'>{m.name}</div>
+                                <div className='text-sm'>{m.name ?? 'noname'}</div>
                             </div>
                         );
                     })}
