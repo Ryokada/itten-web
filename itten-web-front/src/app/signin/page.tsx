@@ -4,6 +4,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { signIn as signInByNextAuth } from 'next-auth/react';
 
 import { useState } from 'react';
+import Message from '../components/Message';
 import { auth } from '@/firebase/client';
 
 /**
@@ -13,6 +14,7 @@ const SingIn = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [disabled, setDisabled] = useState(false);
+    const [message, setMessage] = useState<string>('');
 
     const signIn = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -22,6 +24,10 @@ const SingIn = () => {
         setDisabled(true);
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            if (!userCredential.user.emailVerified) {
+                setMessage('メールアドレスを確認してください');
+                return;
+            }
             const idToken = await userCredential.user.getIdToken();
             await signInByNextAuth('credentials', {
                 idToken,
@@ -29,7 +35,7 @@ const SingIn = () => {
             });
         } catch (e) {
             console.error(e);
-            // TODO: エラーメッセージ
+            setMessage('ログインに失敗しました');
         } finally {
             setDisabled(false);
         }
@@ -42,6 +48,11 @@ const SingIn = () => {
                         ログインしてください
                     </h2>
                 </div>
+                {message && (
+                    <div className='mb-3'>
+                        <Message message={message} />
+                    </div>
+                )}
                 <form className='mt-8 space-y-6' onSubmit={signIn}>
                     <div className='rounded-md shadow-sm -space-y-px'>
                         <div>
