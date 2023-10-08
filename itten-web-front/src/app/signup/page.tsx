@@ -45,7 +45,7 @@ const SignUp = () => {
                 number: data.number,
                 desiredPositions: [],
             });
-            sendEmailVerification(userCredential.user, { url: `${origin}/signup/compleate` });
+            await sendEmailVerification(userCredential.user, { url: `${origin}/signup/compleate` });
             setMessage('アカウント作成しました');
             window.location.href = '/signup/sent';
         } catch (e) {

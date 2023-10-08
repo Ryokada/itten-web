@@ -10,17 +10,24 @@ import React, { useEffect } from 'react';
  * @param children
  */
 const AuthOnly = ({ children }: { children: React.ReactNode }) => {
-    const { status } = useSession();
+    const session = useSession();
     const pathname = usePathname();
     const router = useRouter();
 
     useEffect(() => {
-        if (status === 'unauthenticated' && pathname != '/signin') {
+        if (pathname != '/signin' && session?.status === 'unauthenticated') {
             router.push('/signin');
         }
-    }, [router, pathname, status]);
+        if (
+            pathname != '/signin' &&
+            session?.status === 'authenticated' &&
+            !session?.data.user.emailVerified
+        ) {
+            router.push('/signin');
+        }
+    }, [router, pathname, session, session.status]);
 
-    if (status === 'authenticated') return children;
+    if (session?.status === 'authenticated' && session?.data.user.emailVerified) return children;
 
     return <p>Loading...</p>;
 };
