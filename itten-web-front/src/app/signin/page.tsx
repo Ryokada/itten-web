@@ -40,6 +40,7 @@ const SingIn = () => {
             setDisabled(false);
         }
     };
+
     return (
         <main className='flex min-h-screen flex-col items-center'>
             <div className='max-w-xs w-full space-y-8'>
@@ -97,6 +98,10 @@ const SingIn = () => {
                         >
                             ログイン
                         </button>
+                    </div>
+
+                    <div className='mt-6 text-center text-gray-900'>
+                        <a href='/signin/forget'>{`パスワード忘れた>`}</a>
                     </div>
                 </form>
             </div>

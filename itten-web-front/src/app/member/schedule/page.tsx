@@ -1,30 +1,62 @@
+'use client';
+
 import dayjs from 'dayjs';
 import ja from 'dayjs/locale/ja';
-import { CollectionReference } from 'firebase-admin/firestore';
-import type { Metadata } from 'next';
+import {
+    collection,
+    query,
+    where,
+    getDocs,
+    orderBy,
+    QueryDocumentSnapshot,
+} from 'firebase/firestore';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { ScheduleDoc } from './schedule';
 import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
-import { dbAdmin } from '@/firebase/admin';
+import Spinner from '@/app/components/Spinner';
+import { db } from '@/firebase/client';
 import locationIcon from '@public/icons/location_on.svg';
 import clockIcon from '@public/icons/schedule.svg';
 
 dayjs.locale(ja);
 
-export const metadata: Metadata = {
-    title: '一天スケジュール',
-    description: '一天メンバー用のスケジュールです',
-};
+const Schedule = () => {
+    const [schedulesDocs, setSchedulesDocs] = useState<QueryDocumentSnapshot<ScheduleDoc>[]>();
 
-const Schedule = async () => {
-    const schedulesCollection = dbAdmin.collection('schedules') as CollectionReference<ScheduleDoc>;
-    const schedulesSnapshots = await schedulesCollection
-        .orderBy('startTimestamp')
-        .startAt(new Date())
-        .get();
+    useEffect(() => {
+        const q = query(
+            collection(db, 'schedules'),
+            where('startTimestamp', '>=', new Date()),
+            orderBy('startTimestamp'),
+        );
+        (async () => {
+            const schedulesSnapshots = await getDocs(q);
+            const sDocs = schedulesSnapshots.docs as QueryDocumentSnapshot<ScheduleDoc>[];
+            setSchedulesDocs(sDocs);
+        })();
+    }, []);
 
-    const schedulesDocs = schedulesSnapshots.docs;
+    if (!schedulesDocs) {
+        return (
+            <main className='flex flex-col items-center min-h-screen p-24'>
+                <Spinner />
+            </main>
+        );
+    }
+
+    if (schedulesDocs.length === 0) {
+        return (
+            <main className='flex flex-col items-center min-h-screen py-5 px-10'>
+                <div className='max-w-xl w-full space-y-5'>
+                    <div className='text-center'>
+                        <p className='text-xl'>スケジュールはありません</p>
+                    </div>
+                </div>
+            </main>
+        );
+    }
 
     return (
         <main className='min-h-screen py-5 px-10'>

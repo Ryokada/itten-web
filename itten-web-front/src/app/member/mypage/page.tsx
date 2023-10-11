@@ -1,42 +1,48 @@
-import { CollectionReference } from 'firebase-admin/firestore';
-import type { Metadata } from 'next';
-import { PageNotFoundError } from 'next/dist/shared/lib/utils';
+'use client';
+
+import { DocumentReference, doc, getDoc, setDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 import { BigIcon } from '@/app/components/Icon';
-import { PostionLabel } from '@/app/components/Postion';
+import { PostionLabel, positionsMaster } from '@/app/components/Postion';
+import Spinner from '@/app/components/Spinner';
 import { buildLineAuthLInkUrl } from '@/app/utiles/lineUtil';
-import { dbAdmin } from '@/firebase/admin';
+import { db } from '@/firebase/client';
 import logo from '@public/itten-logo.png';
 import lineLogo from '@public/line/btn_base.png';
 import lineLinkLogo from '@public/line/btn_login_base.png';
 
-export const metadata: Metadata = {
-    title: '一天マイページ',
-    description: '一天メンバー用のマイページです',
-};
-
 /**
  * メンバー用のマイページコンポーネントです
  */
-const Mypage = async () => {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-        throw new PageNotFoundError('MyPage');
-    }
+const Mypage = () => {
+    const { data: session } = useSession();
+    const [member, setMember] = useState<Member>();
+    const [lineLink, setLineLink] = useState<string>();
 
-    // TODO 共通化
-    const memberCollection = dbAdmin.collection('members') as CollectionReference<Member>;
-    const userDocRef = memberCollection.doc(session?.user.uid);
-    const docSnap = await userDocRef.get();
-    const memberInfo = docSnap.data();
+    useEffect(() => {
+        if (!session) return;
+        // TODO 共通化
+        const docRef = doc(db, 'members', session.user.uid) as DocumentReference<Member>;
+        setLineLink(buildLineAuthLInkUrl(session.user.sessionStateId));
 
-    const lineLink = buildLineAuthLInkUrl(session.user.sessionStateId);
+        (async () => {
+            const docSnap = await getDoc(docRef);
+            const memberInfo = docSnap.data();
+            if (memberInfo) {
+                setMember(memberInfo);
+            }
+        })();
+    }, [session]);
 
-    if (!memberInfo) {
-        return <main className='flex flex-col items-center min-h-screen p-24'>ロード中</main>;
+    if (!session || !member) {
+        return (
+            <main className='flex flex-col items-center min-h-screen p-24'>
+                <Spinner />
+            </main>
+        );
     }
 
     return (
@@ -44,26 +50,26 @@ const Mypage = async () => {
             <div className='max-w-xl w-full space-y-5'>
                 <div className='flex items-center'>
                     <div className='mr-10'>
-                        {memberInfo.imageUrl ? (
-                            <BigIcon src={memberInfo.imageUrl} alt='アイコン画像' />
+                        {member.imageUrl ? (
+                            <BigIcon src={member.imageUrl} alt='アイコン画像' />
                         ) : (
                             <BigIcon src={logo} alt='ロゴ' />
                         )}
                     </div>
                     <div>
                         <div className=''>
-                            <div className='text-xl font-bold mr-3'>No. {memberInfo.number}</div>
-                            <div className='text-3xl'>{memberInfo.name}</div>
+                            <div className='text-xl font-bold mr-3'>No. {member.number}</div>
+                            <div className='text-3xl'>{member.name}</div>
                         </div>
                     </div>
                 </div>
                 <div className='mt-5'>
-                    {memberInfo.lineId ? (
+                    {member.lineId ? (
                         <>
                             <div className='flex items-center'>
                                 <Image src={lineLogo} alt='line-login' className='w-5 h-5 mr-2' />
                                 <p className='mr-1 text-gray-700 text-sm'>
-                                    {memberInfo.lineName && `(${memberInfo.lineName})`} 連係済み
+                                    {member.lineName && `(${member.lineName})`} 連係済み
                                 </p>
                             </div>
                             <a href={lineLink} className='text-xs text-gray-500 cursor-pointer'>
@@ -80,7 +86,7 @@ const Mypage = async () => {
                 <div>
                     <p className='text-sm'>希望ポジション</p>
                     <div className='text-lg flex space-x-2 mb-3'>
-                        {memberInfo.desiredPositions.map((p, i) => {
+                        {member.desiredPositions.map((p, i) => {
                             return (
                                 <div key={p}>
                                     {i + 1}.
@@ -89,10 +95,10 @@ const Mypage = async () => {
                             );
                         })}
                     </div>
-                    {memberInfo.positionComment && (
+                    {member.positionComment && (
                         <div className='text-xs rounded bg-slate-300 p-2 h-24'>
                             <p className='text-clip overflow-scroll w-full h-full'>
-                                {memberInfo.positionComment}
+                                {member.positionComment}
                             </p>
                         </div>
                     )}
@@ -103,6 +109,12 @@ const Mypage = async () => {
             </Link>
             <Link href='/signout' className='my-3 text-gray-600 font-bold'>
                 {'ログアウト >'}
+            </Link>
+            <Link
+                href={`/signin/forget?m=${session.user.email}`}
+                className='my-3 text-gray-600 font-bold'
+            >
+                {'パスワード変更 >'}
             </Link>
         </main>
     );
