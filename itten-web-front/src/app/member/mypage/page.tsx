@@ -110,6 +110,12 @@ const Mypage = () => {
             <Link href='/signout' className='my-3 text-gray-600 font-bold'>
                 {'ログアウト >'}
             </Link>
+            <Link
+                href={`/signin/forget?m=${session.user.email}`}
+                className='my-3 text-gray-600 font-bold'
+            >
+                {'パスワード変更 >'}
+            </Link>
         </main>
     );
 };
