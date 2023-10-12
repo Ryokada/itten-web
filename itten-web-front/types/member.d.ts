@@ -5,6 +5,11 @@ type Member = {
     id: string;
 
     /**
+     * メンバーのメールアドレス
+     */
+    email: string;
+
+    /**
      * 名前
      */
     name: string;
@@ -42,4 +47,9 @@ type Member = {
      * ポジションについてコメント
      */
     positionComment?: string;
+
+    /**
+     * メンバーのロール
+     */
+    role: 'admin' | 'member';
 };
