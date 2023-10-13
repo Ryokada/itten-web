@@ -25,6 +25,7 @@ import {
     getScheduleState,
     ScheduleStatus,
     getNoAnsweredMembers,
+    canEditSchedule,
 } from '../schedule';
 import { SmallIcon } from '@/app/components/Icon';
 import Message from '@/app/components/Message';
@@ -47,6 +48,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
     const [scheduleDocRef, setScheduleDocRef] = useState<DocumentReference<ScheduleDoc>>();
     const [schedule, setSchedule] = useState<ScheduleDoc>();
     const [members, setMembers] = useState<Member[]>([]);
+    const [me, setMe] = useState<Member>();
     const [scheduleStatus, setScheduleStatus] = useState<ScheduleStatus>();
     const [message, setMessage] = useState<string>('');
 
@@ -66,17 +68,12 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 'members',
                 session.user.uid,
             ) as DocumentReference<Member>;
-            let myMemberInfo: Member | undefined;
-            if (!session.user.name || !session.user.image) {
-                const myMemberDocSnap = await getDoc(myMemberDocRef);
-                myMemberInfo = myMemberDocSnap.data();
-            }
 
             const attendanse: ScheduledMember = {
                 ref: myMemberDocRef,
                 id: session.user.uid,
-                name: session.user.name ?? myMemberInfo?.name ?? '不明',
-                imageUrl: session.user.image ?? myMemberInfo?.imageUrl,
+                name: session.user.name ?? me?.name ?? '不明',
+                imageUrl: session.user.image ?? me?.imageUrl,
                 createdAt: Timestamp.fromDate(now),
                 updatedAt: Timestamp.fromDate(now),
             };
@@ -127,17 +124,12 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 'members',
                 session.user.uid,
             ) as DocumentReference<Member>;
-            let myMemberInfo: Member | undefined;
-            if (!session.user.name || !session.user.image) {
-                const myMemberDocSnap = await getDoc(myMemberDocRef);
-                myMemberInfo = myMemberDocSnap.data();
-            }
 
             const absence: ScheduledMember = {
                 ref: myMemberDocRef,
                 id: session.user.uid,
-                name: session.user.name ?? myMemberInfo?.name ?? '不明',
-                imageUrl: session.user.image ?? myMemberInfo?.imageUrl,
+                name: session.user.name ?? me?.name ?? '不明',
+                imageUrl: session.user.image ?? me?.imageUrl,
                 createdAt: Timestamp.fromDate(now),
                 updatedAt: Timestamp.fromDate(now),
             };
@@ -184,17 +176,12 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 'members',
                 session.user.uid,
             ) as DocumentReference<Member>;
-            let myMemberInfo: Member | undefined;
-            if (!session.user.name || !session.user.image) {
-                const myMemberDocSnap = await getDoc(myMemberDocRef);
-                myMemberInfo = myMemberDocSnap.data();
-            }
 
             const hold: ScheduledMember = {
                 ref: myMemberDocRef,
                 id: session.user.uid,
-                name: session.user.name ?? myMemberInfo?.name ?? '不明',
-                imageUrl: session.user.image ?? myMemberInfo?.imageUrl,
+                name: session.user.name ?? me?.name ?? '不明',
+                imageUrl: session.user.image ?? me?.imageUrl,
                 createdAt: Timestamp.fromDate(now),
                 updatedAt: Timestamp.fromDate(now),
             };
@@ -247,22 +234,23 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 scheduleInfo.ngMembers.sort(comparAscScheduledMemberCreatedAt);
                 scheduleInfo.holdMembers.sort(comparAscScheduledMemberCreatedAt);
                 setSchedule(scheduleInfo);
+                getScheduleState(scheduleInfo, session.user.uid);
             } else {
                 throw new PageNotFoundError('schedule');
             }
 
             const membersDocs = await getDocs(membersQuery);
             const newMembers: Array<Member> = [];
-            membersDocs.forEach((d) => newMembers.push({ ...d.data(), id: d.id }));
+            membersDocs.forEach((d) => {
+                newMembers.push({ ...d.data(), id: d.id });
+                // 自分だったら自分にも入れとく
+                if (d.id === session.user.uid) {
+                    setMe(d.data());
+                }
+            });
             setMembers(newMembers);
         })();
     }, [session, params.scheduleId]);
-
-    useEffect(() => {
-        if (!session || !schedule) return;
-
-        setScheduleStatus(getScheduleState(session.user.uid, schedule));
-    }, [session, schedule]);
 
     if (!schedule) {
         return <Spinner />;
@@ -395,12 +383,15 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                         })}
                     />
                 </div>
-                <Link
-                    href={`/member/schedule/${params.scheduleId}/edit`}
-                    className='block text-center mx-auto mt-10 w-2/3 p-2 bg-green-500 text-white rounded-md hover:bg-green-600'
-                >
-                    編集はこちら
-                </Link>
+
+                {me && canEditSchedule(schedule, me) && (
+                    <Link
+                        href={`/member/schedule/${params.scheduleId}/edit`}
+                        className='block text-center mx-auto mt-10 w-2/3 p-2 bg-green-500 text-white rounded-md hover:bg-green-600'
+                    >
+                        編集はこちら
+                    </Link>
+                )}
             </div>
         </main>
     );

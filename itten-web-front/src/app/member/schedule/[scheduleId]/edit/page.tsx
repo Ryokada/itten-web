@@ -15,6 +15,7 @@ import ScheduleForm, { ScheduleTnput } from '../../ScheduleForm';
 import { ScheduleDoc } from '../../schedule';
 import Spinner from '@/app/components/Spinner';
 import { db } from '@/firebase/client';
+import { set } from 'firebase/database';
 
 type ScheduleEditProps = {
     params: {
@@ -23,7 +24,9 @@ type ScheduleEditProps = {
 };
 
 const ScheduleEdit = ({ params }: ScheduleEditProps) => {
+    const router = useRouter();
     const { data: session } = useSession();
+    const [member, setMember] = useState<Member>();
     const [scheduleDocRef, setScheduleDocRef] = useState<DocumentReference<ScheduleDoc>>();
     const [schedule, setSchedule] = useState<ScheduleDoc>();
 
@@ -55,18 +58,35 @@ const ScheduleEdit = ({ params }: ScheduleEditProps) => {
     };
 
     useEffect(() => {
+        if (!session) return;
+
+        const myMemberDocRef = doc(db, 'members', session.user.uid) as DocumentReference<Member>;
         // TODO 共通化
-        const docRef = doc(db, 'schedules', params.scheduleId) as DocumentReference<ScheduleDoc>;
-        setScheduleDocRef(docRef);
+        const scheduleDocRef = doc(
+            db,
+            'schedules',
+            params.scheduleId,
+        ) as DocumentReference<ScheduleDoc>;
+        setScheduleDocRef(scheduleDocRef);
 
         (async () => {
-            const docSnap = await getDoc(docRef);
-            const scheduleInfo = docSnap.data();
-            if (scheduleInfo) {
-                setSchedule(scheduleInfo);
-            } else {
-                throw new PageNotFoundError('schedule-edit');
+            const memberDoc = await getDoc(myMemberDocRef);
+            const memberInfo = memberDoc.data();
+
+            const scheduleDoc = await getDoc(scheduleDocRef);
+            const scheduleInfo = scheduleDoc.data();
+
+            if (!memberInfo || !scheduleInfo) {
+                throw new PageNotFoundError('schedule edit page not found');
             }
+
+            // 編集ページを開けるのは作成者と管理者のみ
+            if (memberInfo.id !== scheduleInfo.createdBy && memberInfo.role !== 'admin') {
+                router.push(`/member/schedule/${params.scheduleId}`);
+                return;
+            }
+            setMember(memberInfo);
+            setSchedule(scheduleInfo);
         })();
     }, [params.scheduleId]);
 
