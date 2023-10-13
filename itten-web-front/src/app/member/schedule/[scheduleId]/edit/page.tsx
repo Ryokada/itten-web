@@ -15,7 +15,7 @@ import ScheduleForm, { ScheduleTnput } from '../../ScheduleForm';
 import { ScheduleDoc } from '../../schedule';
 import Spinner from '@/app/components/Spinner';
 import { db } from '@/firebase/client';
-import { set } from 'firebase/database';
+import { useRouter } from 'next/navigation';
 
 type ScheduleEditProps = {
     params: {
