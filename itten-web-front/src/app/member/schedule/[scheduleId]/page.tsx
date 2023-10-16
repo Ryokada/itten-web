@@ -72,8 +72,8 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
             const attendanse: ScheduledMember = {
                 ref: myMemberDocRef,
                 id: session.user.uid,
-                name: session.user.name ?? me?.name ?? '不明',
-                imageUrl: session.user.image ?? me?.imageUrl,
+                name: me?.name ?? '不明',
+                imageUrl: me?.imageUrl,
                 createdAt: Timestamp.fromDate(now),
                 updatedAt: Timestamp.fromDate(now),
             };
@@ -104,6 +104,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 console.log('参加にしました。', newSchedule);
             });
             setMessage('「出席」登録しました。');
+            setScheduleStatus('ok');
         } catch (e) {
             console.error(e);
             setMessage('登録に失敗しました。もう一度やり直してください。');
@@ -128,8 +129,8 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
             const absence: ScheduledMember = {
                 ref: myMemberDocRef,
                 id: session.user.uid,
-                name: session.user.name ?? me?.name ?? '不明',
-                imageUrl: session.user.image ?? me?.imageUrl,
+                name: me?.name ?? '不明',
+                imageUrl: me?.imageUrl,
                 createdAt: Timestamp.fromDate(now),
                 updatedAt: Timestamp.fromDate(now),
             };
@@ -159,6 +160,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 console.log('欠席にしました。', newSchedule);
             });
             setMessage('「欠席」登録しました。');
+            setScheduleStatus('ng');
         } finally {
             setDisabledAbsence(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -180,8 +182,8 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
             const hold: ScheduledMember = {
                 ref: myMemberDocRef,
                 id: session.user.uid,
-                name: session.user.name ?? me?.name ?? '不明',
-                imageUrl: session.user.image ?? me?.imageUrl,
+                name: me?.name ?? '不明',
+                imageUrl: me?.imageUrl,
                 createdAt: Timestamp.fromDate(now),
                 updatedAt: Timestamp.fromDate(now),
             };
@@ -209,7 +211,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
 
                 transaction.update(scheduleDocRef, newSchedule);
                 setSchedule(newSchedule);
-                console.log('保留にしました。', newSchedule);
+                setScheduleStatus('hold');
             });
             setMessage('「保留」登録しました。');
         } finally {
@@ -234,7 +236,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 scheduleInfo.ngMembers.sort(comparAscScheduledMemberCreatedAt);
                 scheduleInfo.holdMembers.sort(comparAscScheduledMemberCreatedAt);
                 setSchedule(scheduleInfo);
-                getScheduleState(scheduleInfo, session.user.uid);
+                setScheduleStatus(getScheduleState(scheduleInfo, session.user.uid));
             } else {
                 throw new PageNotFoundError('schedule');
             }
@@ -406,7 +408,6 @@ const ScheduledMemberList = ({
     scheduledMembers: Array<ScheduledMember>;
     title: string;
 }) => {
-    console.log(scheduledMembers);
     return (
         <div>
             <div className='flex'>

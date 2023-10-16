@@ -20,7 +20,6 @@ const AuthOnly = ({ children }: { children: React.ReactNode }) => {
     const [authenticated, setAuthenticated] = useState(false);
 
     useEffect(() => {
-        console.log('session', session);
         if (pathname != '/signin' && session?.status === 'unauthenticated') {
             router.push('/signin');
         }
@@ -46,7 +45,6 @@ const AuthOnly = ({ children }: { children: React.ReactNode }) => {
     }, [router, pathname, session, session.status]);
 
     if (authenticated) {
-        console.log('authenticated recder', children);
         return <>{children}</>;
     } else {
         console.log('authenticated none');
