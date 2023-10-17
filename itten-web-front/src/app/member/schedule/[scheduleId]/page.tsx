@@ -25,6 +25,7 @@ import {
     getScheduleState,
     ScheduleStatus,
     getNoAnsweredMembers,
+    canEditSchedule,
 } from '../schedule';
 import { SmallIcon } from '@/app/components/Icon';
 import Message from '@/app/components/Message';
@@ -47,186 +48,135 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
     const [scheduleDocRef, setScheduleDocRef] = useState<DocumentReference<ScheduleDoc>>();
     const [schedule, setSchedule] = useState<ScheduleDoc>();
     const [members, setMembers] = useState<Member[]>([]);
+    const [me, setMe] = useState<Member>();
     const [scheduleStatus, setScheduleStatus] = useState<ScheduleStatus>();
     const [message, setMessage] = useState<string>('');
 
+    const [registLock, setRegistLock] = useState<boolean>(false);
     const [disabledAttendance, setDisabledAttendance] = useState(false);
     const [disabledAbsence, setDisabledAbsence] = useState(false);
     const [disabledHold, setDisabledHold] = useState(false);
 
-    // TODO 要共通化
-    const registAttendance = async () => {
+    /**
+     * 出欠を登録します
+     *
+     * @param stetus
+     * @returns
+     */
+    const regist = async (stetus: ScheduleStatus) => {
         if (!scheduleDocRef || !schedule || !session) return;
+        if (registLock) return;
 
         const now = new Date();
-        setDisabledAttendance(true);
+
+        setRegistLock(true);
         try {
-            const myMemberDocRef = doc(
-                db,
-                'members',
-                session.user.uid,
-            ) as DocumentReference<Member>;
-            let myMemberInfo: Member | undefined;
-            if (!session.user.name || !session.user.image) {
-                const myMemberDocSnap = await getDoc(myMemberDocRef);
-                myMemberInfo = myMemberDocSnap.data();
+            let registLabel = '';
+            let setDisabled: (value: boolean) => void;
+            let isAlreadyRgisterd: (schedule: ScheduleDoc) => boolean;
+            let buildNewSchedule: (
+                updateTarget: ScheduleDoc,
+                attendanse: ScheduledMember,
+            ) => ScheduleDoc;
+
+            switch (stetus) {
+                case 'ok': {
+                    registLabel = '参加';
+                    setDisabled = setDisabledAttendance;
+                    isAlreadyRgisterd = (schedule) =>
+                        schedule.okMembers.find((m) => m.id === session.user.uid) !== undefined;
+                    buildNewSchedule = (updateTarget, attendanse) => ({
+                        ...updateTarget,
+                        okMembers: [...schedule.okMembers, attendanse],
+                        ngMembers: updateTarget.ngMembers.filter((m) => m.id !== session.user.uid),
+                        holdMembers: updateTarget.holdMembers.filter(
+                            (m) => m.id !== session.user.uid,
+                        ),
+                    });
+                    break;
+                }
+                case 'ng': {
+                    registLabel = '欠席';
+                    setDisabled = setDisabledAbsence;
+                    isAlreadyRgisterd = (schedule) =>
+                        schedule.ngMembers.find((m) => m.id === session.user.uid) !== undefined;
+                    buildNewSchedule = (updateTarget, attendanse) => ({
+                        ...updateTarget,
+                        okMembers: updateTarget.okMembers.filter((m) => m.id !== session.user.uid),
+                        ngMembers: [...schedule.ngMembers, attendanse],
+                        holdMembers: updateTarget.holdMembers.filter(
+                            (m) => m.id !== session.user.uid,
+                        ),
+                    });
+                    break;
+                }
+                case 'hold': {
+                    registLabel = '保留';
+                    setDisabled = setDisabledHold;
+                    isAlreadyRgisterd = (schedule) =>
+                        schedule.holdMembers.find((m) => m.id === session.user.uid) !== undefined;
+                    buildNewSchedule = (updateTarget, attendanse) => ({
+                        ...updateTarget,
+                        okMembers: updateTarget.okMembers.filter((m) => m.id !== session.user.uid),
+                        ngMembers: updateTarget.ngMembers.filter((m) => m.id !== session.user.uid),
+                        holdMembers: [...schedule.holdMembers, attendanse],
+                    });
+                    break;
+                }
+                default: {
+                    throw new Error('invalid status');
+                }
             }
 
-            const attendanse: ScheduledMember = {
-                ref: myMemberDocRef,
-                id: session.user.uid,
-                name: session.user.name ?? myMemberInfo?.name ?? '不明',
-                imageUrl: session.user.image ?? myMemberInfo?.imageUrl,
-                createdAt: Timestamp.fromDate(now),
-                updatedAt: Timestamp.fromDate(now),
-            };
+            setDisabled(true);
+            try {
+                const myMemberDocRef = doc(
+                    db,
+                    'members',
+                    session.user.uid,
+                ) as DocumentReference<Member>;
 
-            await runTransaction(db, async (transaction) => {
-                const sfDoc = await transaction.get(scheduleDocRef);
-                if (!sfDoc.exists()) {
-                    throw Error('Document does not exist!');
-                }
-
-                const updateTarget = sfDoc.data();
-
-                const already = updateTarget.okMembers.find((m) => m.id === session.user.uid);
-                if (already) {
-                    console.log('すでに参加済みです', updateTarget);
-                    return;
-                }
-
-                const newSchedule: ScheduleDoc = {
-                    ...updateTarget,
-                    okMembers: [...schedule.okMembers, attendanse],
-                    ngMembers: updateTarget.ngMembers.filter((m) => m.id !== session.user.uid),
-                    holdMembers: updateTarget.holdMembers.filter((m) => m.id !== session.user.uid),
+                const attendanse: ScheduledMember = {
+                    ref: myMemberDocRef,
+                    id: session.user.uid,
+                    name: me?.name ?? '不明',
+                    imageUrl: me?.imageUrl,
+                    createdAt: Timestamp.fromDate(now),
+                    updatedAt: Timestamp.fromDate(now),
                 };
 
-                transaction.update(scheduleDocRef, newSchedule);
-                setSchedule(newSchedule);
-                console.log('参加にしました。', newSchedule);
-            });
-            setMessage('「出席」登録しました。');
-        } catch (e) {
-            console.error(e);
-            setMessage('登録に失敗しました。もう一度やり直してください。');
-        } finally {
-            setDisabledAttendance(false);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    };
+                await runTransaction(db, async (transaction) => {
+                    const sfDoc = await transaction.get(scheduleDocRef);
+                    if (!sfDoc.exists()) {
+                        throw Error('対象のスケージュールが存在しません');
+                    }
 
-    const registAbsence = async () => {
-        if (!scheduleDocRef || !schedule || !session) return;
+                    const updateTarget = sfDoc.data();
 
-        const now = new Date();
-        setDisabledAbsence(true);
-        try {
-            const myMemberDocRef = doc(
-                db,
-                'members',
-                session.user.uid,
-            ) as DocumentReference<Member>;
-            let myMemberInfo: Member | undefined;
-            if (!session.user.name || !session.user.image) {
-                const myMemberDocSnap = await getDoc(myMemberDocRef);
-                myMemberInfo = myMemberDocSnap.data();
+                    const already = isAlreadyRgisterd(updateTarget);
+                    if (already) {
+                        console.log(`すでに「${registLabel}」登録済みです`, updateTarget, already);
+                        setSchedule(updateTarget);
+                        return;
+                    }
+
+                    const newSchedule = buildNewSchedule(updateTarget, attendanse);
+                    console.log('newSchedule', newSchedule);
+
+                    transaction.update(scheduleDocRef, newSchedule);
+                    setSchedule(newSchedule);
+                    console.log(`「${registLabel}」登録しました。`, newSchedule);
+                });
+                setMessage(`「${registLabel}」登録しました。`);
+                setScheduleStatus(stetus);
+            } catch (e) {
+                console.error(`${registLabel}」登録に失敗しました。`, e);
+                setMessage(`${registLabel}」登録に失敗しました。もう一度やり直してください。`);
+            } finally {
+                setDisabled(false);
             }
-
-            const absence: ScheduledMember = {
-                ref: myMemberDocRef,
-                id: session.user.uid,
-                name: session.user.name ?? myMemberInfo?.name ?? '不明',
-                imageUrl: session.user.image ?? myMemberInfo?.imageUrl,
-                createdAt: Timestamp.fromDate(now),
-                updatedAt: Timestamp.fromDate(now),
-            };
-
-            await runTransaction(db, async (transaction) => {
-                const sfDoc = await transaction.get(scheduleDocRef);
-                if (!sfDoc.exists()) {
-                    throw Error('Document does not exist!');
-                }
-
-                const updateTarget = sfDoc.data();
-
-                const already = updateTarget.ngMembers.find((m) => m.id === session.user.uid);
-                if (already) {
-                    console.log('すでに欠席済みです', updateTarget);
-                    return;
-                }
-
-                const newSchedule: ScheduleDoc = {
-                    ...updateTarget,
-                    okMembers: updateTarget.okMembers.filter((m) => m.id !== session.user.uid),
-                    ngMembers: [...schedule.ngMembers, absence],
-                    holdMembers: updateTarget.holdMembers.filter((m) => m.id !== session.user.uid),
-                };
-                transaction.update(scheduleDocRef, newSchedule);
-                setSchedule(newSchedule);
-                console.log('欠席にしました。', newSchedule);
-            });
-            setMessage('「欠席」登録しました。');
         } finally {
-            setDisabledAbsence(false);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    };
-
-    const registHold = async () => {
-        if (!scheduleDocRef || !schedule || !session) return;
-
-        const now = new Date();
-        setDisabledHold(true);
-        try {
-            const myMemberDocRef = doc(
-                db,
-                'members',
-                session.user.uid,
-            ) as DocumentReference<Member>;
-            let myMemberInfo: Member | undefined;
-            if (!session.user.name || !session.user.image) {
-                const myMemberDocSnap = await getDoc(myMemberDocRef);
-                myMemberInfo = myMemberDocSnap.data();
-            }
-
-            const hold: ScheduledMember = {
-                ref: myMemberDocRef,
-                id: session.user.uid,
-                name: session.user.name ?? myMemberInfo?.name ?? '不明',
-                imageUrl: session.user.image ?? myMemberInfo?.imageUrl,
-                createdAt: Timestamp.fromDate(now),
-                updatedAt: Timestamp.fromDate(now),
-            };
-
-            await runTransaction(db, async (transaction) => {
-                const sfDoc = await transaction.get(scheduleDocRef);
-                if (!sfDoc.exists()) {
-                    throw Error('Document does not exist!');
-                }
-
-                const updateTarget = sfDoc.data();
-
-                const already = updateTarget.holdMembers.find((m) => m.id === session.user.uid);
-                if (already) {
-                    console.log('すでに保留済みです', updateTarget);
-                    return;
-                }
-
-                const newSchedule: ScheduleDoc = {
-                    ...updateTarget,
-                    okMembers: updateTarget.okMembers.filter((m) => m.id !== session.user.uid),
-                    ngMembers: updateTarget.ngMembers.filter((m) => m.id !== session.user.uid),
-                    holdMembers: [...schedule.holdMembers, hold],
-                };
-
-                transaction.update(scheduleDocRef, newSchedule);
-                setSchedule(newSchedule);
-                console.log('保留にしました。', newSchedule);
-            });
-            setMessage('「保留」登録しました。');
-        } finally {
-            setDisabledHold(false);
+            setRegistLock(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
@@ -247,22 +197,23 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 scheduleInfo.ngMembers.sort(comparAscScheduledMemberCreatedAt);
                 scheduleInfo.holdMembers.sort(comparAscScheduledMemberCreatedAt);
                 setSchedule(scheduleInfo);
+                setScheduleStatus(getScheduleState(scheduleInfo, session.user.uid));
             } else {
                 throw new PageNotFoundError('schedule');
             }
 
             const membersDocs = await getDocs(membersQuery);
             const newMembers: Array<Member> = [];
-            membersDocs.forEach((d) => newMembers.push({ ...d.data(), id: d.id }));
+            membersDocs.forEach((d) => {
+                newMembers.push({ ...d.data(), id: d.id });
+                // 自分だったら自分にも入れとく
+                if (d.id === session.user.uid) {
+                    setMe(d.data());
+                }
+            });
             setMembers(newMembers);
         })();
     }, [session, params.scheduleId]);
-
-    useEffect(() => {
-        if (!session || !schedule) return;
-
-        setScheduleStatus(getScheduleState(session.user.uid, schedule));
-    }, [session, schedule]);
 
     if (!schedule) {
         return <Spinner />;
@@ -326,21 +277,21 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 <div className='flex w-full space-x-3 my-5'>
                     <button
                         className='w-1/3 p-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-800 text-center cursor-pointer opacity-30 disabled:opacity-100 disabled:cursor-not-allowed'
-                        onClick={registAttendance}
+                        onClick={() => regist('ok')}
                         disabled={disabledAttendance || scheduleStatus === 'ok'}
                     >
                         参加
                     </button>
                     <button
                         className='w-1/3 p-3 bg-teal-600 text-white rounded-md hover:bg-teal-800 text-center cursor-pointer opacity-30 disabled:opacity-100 disabled:cursor-not-allowed'
-                        onClick={registHold}
+                        onClick={() => regist('hold')}
                         disabled={disabledHold || scheduleStatus === 'hold'}
                     >
                         保留
                     </button>
                     <button
                         className='w-1/3 p-3 bg-rose-600 text-white rounded-md hover:bg-rose-800 text-center cursor-pointer opacity-30 disabled:opacity-100 disabled:cursor-not-allowed'
-                        onClick={registAbsence}
+                        onClick={() => regist('ng')}
                         disabled={disabledAbsence || scheduleStatus === 'ng'}
                     >
                         欠席
@@ -395,12 +346,15 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                         })}
                     />
                 </div>
-                <Link
-                    href={`/member/schedule/${params.scheduleId}/edit`}
-                    className='block text-center mx-auto mt-10 w-2/3 p-2 bg-green-500 text-white rounded-md hover:bg-green-600'
-                >
-                    編集はこちら
-                </Link>
+
+                {me && canEditSchedule(schedule, me) && (
+                    <Link
+                        href={`/member/schedule/${params.scheduleId}/edit`}
+                        className='block text-center mx-auto mt-10 w-2/3 p-2 bg-green-500 text-white rounded-md hover:bg-green-600'
+                    >
+                        編集はこちら
+                    </Link>
+                )}
             </div>
         </main>
     );
@@ -415,7 +369,6 @@ const ScheduledMemberList = ({
     scheduledMembers: Array<ScheduledMember>;
     title: string;
 }) => {
-    console.log(scheduledMembers);
     return (
         <div>
             <div className='flex'>

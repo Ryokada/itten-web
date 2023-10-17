@@ -100,11 +100,11 @@ export type ScheduleStatus = 'ok' | 'ng' | 'hold' | null | undefined;
 /**
  * 指定したユーザーのスケジュールの出欠登録状況を取得します
  *
- * @param userId 対象のユーザーID
  * @param schedule 対象のスケジュール
+ * @param userId 対象のユーザーID
  * @returns 出欠状況。未登録の場合 null です。
  */
-export const getScheduleState = (userId: string, schedule: ScheduleDoc): ScheduleStatus => {
+export const getScheduleState = (schedule: ScheduleDoc, userId: string): ScheduleStatus => {
     const ok = schedule.okMembers.find((m) => m.id === userId);
     if (ok) {
         return 'ok';
@@ -121,6 +121,25 @@ export const getScheduleState = (userId: string, schedule: ScheduleDoc): Schedul
     }
 
     return null;
+};
+
+/**
+ * 指定したスケジュールが変種可能かどうかを判定します
+ *
+ * @param schedule
+ * @param me
+ * @returns
+ */
+export const canEditSchedule = (schedule: ScheduleDoc, me: Member): boolean => {
+    if (me.role === 'admin') {
+        return true;
+    }
+
+    if (me.id === schedule.createdBy) {
+        return true;
+    }
+
+    return false;
 };
 
 /**

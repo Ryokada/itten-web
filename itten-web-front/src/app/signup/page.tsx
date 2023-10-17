@@ -41,9 +41,11 @@ const SignUp = () => {
             const docRef = doc(db, 'members', userCredential.user.uid) as DocumentReference<Member>;
             await setDoc(docRef, {
                 id: userCredential.user.uid,
+                email: userCredential.user.email ?? data.email,
                 name: data.name,
                 number: data.number,
                 desiredPositions: [],
+                role: 'member',
             });
             await sendEmailVerification(userCredential.user, { url: `${origin}/signup/compleate` });
             setMessage('アカウント作成しました');
