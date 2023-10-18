@@ -1,21 +1,14 @@
 'use client';
 
-import {
-    Timestamp,
-    DocumentReference,
-    doc,
-    getDoc,
-    setDoc,
-    runTransaction,
-} from 'firebase/firestore';
+import { Timestamp, DocumentReference, doc, getDoc, runTransaction } from 'firebase/firestore';
 import { PageNotFoundError } from 'next/dist/shared/lib/utils';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import ScheduleForm, { ScheduleTnput } from '../../ScheduleForm';
 import { ScheduleDoc } from '../../schedule';
 import Spinner from '@/app/components/Spinner';
 import { db } from '@/firebase/client';
-import { useRouter } from 'next/navigation';
 
 type ScheduleEditProps = {
     params: {
@@ -88,7 +81,7 @@ const ScheduleEdit = ({ params }: ScheduleEditProps) => {
             setMember(memberInfo);
             setSchedule(scheduleInfo);
         })();
-    }, [params.scheduleId]);
+    }, [params.scheduleId, router, session]);
 
     if (!session || !schedule) {
         return <Spinner />;
