@@ -170,8 +170,8 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 setMessage(`「${registLabel}」登録しました。`);
                 setScheduleStatus(stetus);
             } catch (e) {
-                console.error(`${registLabel}」登録に失敗しました。`, e);
-                setMessage(`${registLabel}」登録に失敗しました。もう一度やり直してください。`);
+                console.error(`「${registLabel}」登録に失敗しました。`, e);
+                setMessage(`「${registLabel}」登録に失敗しました。もう一度やり直してください。`);
             } finally {
                 setDisabled(false);
             }
