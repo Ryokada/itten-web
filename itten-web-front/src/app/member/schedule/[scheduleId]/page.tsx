@@ -143,6 +143,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     imageUrl: me?.imageUrl ?? '',
                     createdAt: Timestamp.fromDate(now),
                     updatedAt: Timestamp.fromDate(now),
+                    memo: '',
                 };
 
                 await runTransaction(db, async (transaction) => {
@@ -342,6 +343,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                                 imageUrl: m.imageUrl,
                                 createdAt: dummyTimestamp,
                                 updatedAt: dummyTimestamp,
+                                memo: '',
                             };
                         })}
                     />
