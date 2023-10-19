@@ -56,6 +56,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
     const [disabledAttendance, setDisabledAttendance] = useState(false);
     const [disabledAbsence, setDisabledAbsence] = useState(false);
     const [disabledHold, setDisabledHold] = useState(false);
+    const [attendanseMemo, setAttendanseMemo] = useState<string>('');
 
     /**
      * 出欠を登録します
@@ -143,7 +144,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     imageUrl: me?.imageUrl ?? '',
                     createdAt: Timestamp.fromDate(now),
                     updatedAt: Timestamp.fromDate(now),
-                    memo: '',
+                    memo: attendanseMemo ?? '',
                 };
 
                 await runTransaction(db, async (transaction) => {
@@ -198,7 +199,9 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 scheduleInfo.ngMembers.sort(comparAscScheduledMemberCreatedAt);
                 scheduleInfo.holdMembers.sort(comparAscScheduledMemberCreatedAt);
                 setSchedule(scheduleInfo);
-                setScheduleStatus(getScheduleState(scheduleInfo, session.user.uid));
+                const attendanse = getScheduleState(scheduleInfo, session.user.uid);
+                setScheduleStatus(attendanse?.state);
+                setAttendanseMemo(attendanse?.me.memo ?? '');
             } else {
                 throw new PageNotFoundError('schedule');
             }
@@ -269,13 +272,29 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 {/* スケジュール種別 */}
                 <ScheduleTypeLabel typeId={schedule.type} />
 
+                {/* 対戦相手 */}
+                {schedule.vs && <div className=''>vs {schedule.vs}</div>}
+
+                {/* ホーム or ビジター */}
+                {schedule.vs &&
+                    (schedule.isHome ? (
+                        <div className='text-sm'>{'ホーム'}</div>
+                    ) : (
+                        <div className='text-sm'>{'ビジター'}</div>
+                    ))}
+
+                {/* メモ */}
+                <div className='my-2 mx-1 p-2 bg-gray-100 rounded text-sm'>
+                    {schedule.memo ? schedule.memo : '　'}
+                </div>
+
                 {/* 出欠登録ボタン */}
                 {!scheduleStatus && (
                     <div className='w-full text-center font-bold rounded bg-yellow-400 p-1 border border-gray-400'>
                         ⚠️ 出欠未登録です ⚠️
                     </div>
                 )}
-                <div className='flex w-full space-x-3 my-5'>
+                <div className='flex w-full space-x-3 mt-10 mb-3'>
                     <button
                         className='w-1/3 p-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-800 text-center cursor-pointer opacity-30 disabled:opacity-100 disabled:cursor-not-allowed'
                         onClick={() => regist('ok')}
@@ -298,21 +317,14 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                         欠席
                     </button>
                 </div>
-
-                {/* 対戦相手 */}
-                {schedule.vs && <div className=''>vs {schedule.vs}</div>}
-
-                {/* ホーム or ビジター */}
-                {schedule.vs && schedule.isHome ? (
-                    <div className='text-sm'>{'(ホーム)'}</div>
-                ) : (
-                    <div className='text-sm'>{'(ビジター)'}</div>
-                )}
-
-                {/* メモ */}
-                <div className='my-2 mx-1 p-2 bg-gray-100 rounded text-sm'>
-                    {schedule.memo ? schedule.memo : '　'}
-                </div>
+                <textarea
+                    className='mx-1 p-2 border rounded-md w-full text-sm'
+                    name='attendandeMemo'
+                    rows={3}
+                    value={attendanseMemo}
+                    placeholder='出欠に関しての補足を入力できます'
+                    onChange={(event) => setAttendanseMemo(event.target.value)}
+                />
 
                 <hr
                     className='h-px my-8

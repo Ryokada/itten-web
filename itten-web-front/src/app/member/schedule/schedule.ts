@@ -104,20 +104,32 @@ export type ScheduleStatus = 'ok' | 'ng' | 'hold' | null | undefined;
  * @param userId 対象のユーザーID
  * @returns 出欠状況。未登録の場合 null です。
  */
-export const getScheduleState = (schedule: ScheduleDoc, userId: string): ScheduleStatus => {
+export const getScheduleState = (
+    schedule: ScheduleDoc,
+    userId: string,
+): { state: ScheduleStatus; me: ScheduledMember } | null => {
     const ok = schedule.okMembers.find((m) => m.id === userId);
     if (ok) {
-        return 'ok';
+        return {
+            state: 'ok',
+            me: ok,
+        };
     }
 
     const ng = schedule.ngMembers.find((m) => m.id === userId);
     if (ng) {
-        return 'ng';
+        return {
+            state: 'ng',
+            me: ng,
+        };
     }
 
     const hold = schedule.holdMembers.find((m) => m.id === userId);
     if (hold) {
-        return 'hold';
+        return {
+            state: 'hold',
+            me: hold,
+        };
     }
 
     return null;
