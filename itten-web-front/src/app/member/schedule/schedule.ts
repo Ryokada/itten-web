@@ -146,14 +146,14 @@ export const canEditSchedule = (schedule: ScheduleDoc, me: Member): boolean => {
  * 出欠未回答ユーザーの一覧を取得します
  *
  * @param schedule 対象のスケジュール
- * @param members 全メンバー（要ID）
+ * @param allMembers 全メンバー（要ID）
  * @returns
  */
 export const getNoAnsweredMembers = (
     schedule: ScheduleDoc,
-    members: Array<Member>,
+    allMembers: Array<Member>,
 ): Array<Member> => {
-    return members.filter(
+    return allMembers.filter(
         (m) =>
             !schedule.okMembers.some((ok) => m.id === ok.id) &&
             !schedule.ngMembers.some((ng) => m.id === ng.id) &&
