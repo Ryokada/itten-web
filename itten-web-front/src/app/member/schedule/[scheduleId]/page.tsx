@@ -140,7 +140,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     ref: myMemberDocRef,
                     id: session.user.uid,
                     name: me?.name ?? '不明',
-                    imageUrl: me?.imageUrl,
+                    imageUrl: me?.imageUrl ?? '',
                     createdAt: Timestamp.fromDate(now),
                     updatedAt: Timestamp.fromDate(now),
                 };
