@@ -25,43 +25,48 @@ const ScheduleEdit = ({ params }: ScheduleEditProps) => {
     const [member, setMember] = useState<Member>();
     const [scheduleDocRef, setScheduleDocRef] = useState<DocumentReference<ScheduleDoc>>();
     const [schedule, setSchedule] = useState<ScheduleDoc>();
+    const [disabled, setDisabled] = useState(false);
 
     const onSubmit = async (inputData: ScheduleTnput) => {
         if (!session || !schedule || !scheduleDocRef) return;
+        setDisabled(true);
 
-        await runTransaction(db, async (transaction) => {
-            const sfDoc = await transaction.get(scheduleDocRef);
-            if (!sfDoc.exists()) {
-                throw Error('Document does not exist!');
-            }
-
-            const updateTarget = sfDoc.data();
-
-            const newSchedule: ScheduleDoc = {
-                ...updateTarget,
-                ...inputData,
-                startTimestamp: Timestamp.fromDate(inputData.startTimestamp),
-                endTimestamp: Timestamp.fromDate(inputData.endTimestamp),
-                isConfirmed: false,
-                updatredBy: session.user.uid,
-            };
-            transaction.update(scheduleDocRef, newSchedule);
-            console.log('スケジュールを更新しました。', newSchedule);
-            if (SHOULD_NOTIFY) {
-                try {
-                    const lineSendChangeScheduleMessage = httpsCallable(
-                        functions,
-                        'lineSendChangeScheduleMessage',
-                    );
-                    await lineSendChangeScheduleMessage({ scheduleId: scheduleDocRef.id });
-                } catch (e) {
-                    console.error('LINE通知に失敗しました', e);
+        try {
+            await runTransaction(db, async (transaction) => {
+                const sfDoc = await transaction.get(scheduleDocRef);
+                if (!sfDoc.exists()) {
+                    throw Error('Document does not exist!');
                 }
-            }
-        });
-        // スクロールが戻らない
-        // router.push('/member/schedule', { scroll: true });
-        window.location.href = `/member/schedule/${params.scheduleId}`;
+
+                const updateTarget = sfDoc.data();
+
+                const newSchedule: ScheduleDoc = {
+                    ...updateTarget,
+                    ...inputData,
+                    startTimestamp: Timestamp.fromDate(inputData.startTimestamp),
+                    endTimestamp: Timestamp.fromDate(inputData.endTimestamp),
+                    updatredBy: session.user.uid,
+                };
+                transaction.update(scheduleDocRef, newSchedule);
+                console.log('スケジュールを更新しました。', newSchedule);
+                if (SHOULD_NOTIFY) {
+                    try {
+                        const lineSendChangeScheduleMessage = httpsCallable(
+                            functions,
+                            'lineSendChangeScheduleMessage',
+                        );
+                        await lineSendChangeScheduleMessage({ scheduleId: scheduleDocRef.id });
+                    } catch (e) {
+                        console.error('LINE通知に失敗しました', e);
+                    }
+                }
+            });
+            // スクロールが戻らない
+            // router.push('/member/schedule', { scroll: true });
+            // window.location.href = `/member/schedule/${params.scheduleId}`;
+        } finally {
+            setDisabled(false);
+        }
     };
 
     useEffect(() => {

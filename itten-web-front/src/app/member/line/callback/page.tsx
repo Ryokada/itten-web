@@ -61,7 +61,7 @@ const LineCallback = () => {
                 return;
             }
 
-            memberInfo.imageUrl = lineToken.picture;
+            memberInfo.imageUrl = lineToken.picture ?? '';
             memberInfo.lineId = lineToken.sub;
             memberInfo.lineName = lineToken.name;
             await setDoc(docRef, memberInfo);
