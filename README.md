@@ -10,7 +10,10 @@
 
 ### フロント
 
-Nextjs
+* Nextjs 13
+* React 18
+* Taileind CSS 3
+* TypeScript
 
 ### バックエンド
 
