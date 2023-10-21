@@ -78,6 +78,7 @@ export type ScheduleDoc = {
 export type ScheduledMember = {
     ref?: DocumentReference<Member> | AdminDocumentReference<Member>;
     id: string;
+    lineId?: string;
     name: string;
     imageUrl?: string;
     memo?: string;

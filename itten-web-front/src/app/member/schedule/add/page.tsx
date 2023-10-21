@@ -1,11 +1,14 @@
 'use client';
 
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import { useSession } from 'next-auth/react';
 import ScheduleForm, { ScheduleTnput } from '../ScheduleForm';
 import { ScheduleDoc } from '../schedule';
 import Spinner from '@/app/components/Spinner';
-import { db } from '@/firebase/client';
+import { db, functions } from '@/firebase/client';
+
+const SHOULD_NOTIFY = process.env.NEXT_PUBLIC_SHOULD_NOTIFY === 'true';
 
 const ScheduleAdd = () => {
     const { data: session } = useSession();
@@ -28,6 +31,17 @@ const ScheduleAdd = () => {
         const schedulesCollection = collection(db, 'schedules');
         const deoRef = await addDoc(schedulesCollection, newSchedule);
         console.log('新しいスケジュールを作成しました。', deoRef);
+        if (SHOULD_NOTIFY) {
+            try {
+                const lineSendAddScheduleMessage = httpsCallable(
+                    functions,
+                    'lineSendAddScheduleMessage',
+                );
+                await lineSendAddScheduleMessage({ scheduleId: deoRef.id });
+            } catch (e) {
+                console.error('LINE通知に失敗しました', e);
+            }
+        }
         // スクロールが戻らない
         // router.push('/member/schedule', { scroll: true });
         window.location.href = '/member/schedule';

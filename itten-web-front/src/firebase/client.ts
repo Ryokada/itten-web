@@ -1,6 +1,7 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_API_KEY,
@@ -24,3 +25,8 @@ export const auth = getAuth(app);
  * Firebase Firestore SDK
  */
 export const db = getFirestore(app);
+
+/**
+ * Firebase Functions SDK
+ */
+export const functions = getFunctions(app, 'asia-northeast1');

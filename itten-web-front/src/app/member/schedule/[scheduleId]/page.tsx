@@ -13,6 +13,7 @@ import {
     getDocs,
     runTransaction,
 } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import { PageNotFoundError } from 'next/dist/shared/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -31,7 +32,7 @@ import { SmallIcon } from '@/app/components/Icon';
 import Message from '@/app/components/Message';
 import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
 import Spinner from '@/app/components/Spinner';
-import { db } from '@/firebase/client';
+import { db, functions } from '@/firebase/client';
 import locationIcon from '@public/icons/location_on.svg';
 import clockIcon from '@public/icons/schedule.svg';
 
@@ -48,6 +49,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
     const [scheduleDocRef, setScheduleDocRef] = useState<DocumentReference<ScheduleDoc>>();
     const [schedule, setSchedule] = useState<ScheduleDoc>();
     const [members, setMembers] = useState<Member[]>([]);
+    const [noAnsweredMembers, setNoAnsweredMembers] = useState<ScheduledMember[]>([]);
     const [me, setMe] = useState<Member>();
     const [scheduleStatus, setScheduleStatus] = useState<ScheduleStatus>();
     const [message, setMessage] = useState<string>('');
@@ -56,7 +58,31 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
     const [disabledAttendance, setDisabledAttendance] = useState(false);
     const [disabledAbsence, setDisabledAbsence] = useState(false);
     const [disabledHold, setDisabledHold] = useState(false);
+    const [disabledRemaind, setDisabledRemaind] = useState(false);
     const [attendanseMemo, setAttendanseMemo] = useState<string>('');
+
+    const sendRemind = async () => {
+        if (!scheduleDocRef || !noAnsweredMembers || noAnsweredMembers.length === 0) return;
+
+        setDisabledRemaind(true);
+        try {
+            const lineSendRemindInputSchedule = httpsCallable(
+                functions,
+                'lineSendRemindInputSchedule',
+            );
+            await lineSendRemindInputSchedule({
+                scheduleId: scheduleDocRef.id,
+                toIds: noAnsweredMembers.filter((m) => m.lineId).map((m) => m.lineId),
+            });
+            setMessage('催促のLINEを送信しました');
+        } catch (e) {
+            console.error('LINE通知に失敗しました', e);
+            setMessage('催促のLINEを送信に失敗しました');
+        } finally {
+            setDisabledRemaind(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
 
     /**
      * 出欠を登録します
@@ -145,6 +171,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     createdAt: Timestamp.fromDate(now),
                     updatedAt: Timestamp.fromDate(now),
                     memo: attendanseMemo ?? '',
+                    lineId: me?.lineId,
                 };
 
                 await runTransaction(db, async (transaction) => {
@@ -167,6 +194,20 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
 
                     transaction.update(scheduleDocRef, newSchedule);
                     setSchedule(newSchedule);
+                    setNoAnsweredMembers(
+                        getNoAnsweredMembers(newSchedule, members).map((m) => {
+                            const dummyTimestamp = Timestamp.now();
+                            return {
+                                id: m.id,
+                                name: m.name,
+                                imageUrl: m.imageUrl,
+                                createdAt: dummyTimestamp,
+                                updatedAt: dummyTimestamp,
+                                memo: '',
+                                lineId: m.lineId,
+                            };
+                        }),
+                    );
                     console.log(`「${registLabel}」登録しました。`, newSchedule);
                 });
                 setMessage(`「${registLabel}」登録しました。`);
@@ -216,6 +257,20 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 }
             });
             setMembers(newMembers);
+            setNoAnsweredMembers(
+                getNoAnsweredMembers(scheduleInfo, newMembers).map((m) => {
+                    const dummyTimestamp = Timestamp.now();
+                    return {
+                        id: m.id,
+                        name: m.name,
+                        imageUrl: m.imageUrl,
+                        createdAt: dummyTimestamp,
+                        updatedAt: dummyTimestamp,
+                        memo: '',
+                        lineId: m.lineId,
+                    };
+                }),
+            );
         })();
     }, [session, params.scheduleId]);
 
@@ -228,7 +283,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
 
     return (
         <main className='min-h-screen py-5 px-10'>
-            <div className='max-w-xl w-full mx-auto'>
+            <div className='max-w-xl w-full mx-auto mb-5'>
                 {/* メッセージ */}
                 {message && (
                     <div className='mb-3'>
@@ -347,17 +402,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     />
                     <ScheduledMemberList
                         title='⚠️未登録メンバー'
-                        scheduledMembers={getNoAnsweredMembers(schedule, members).map((m) => {
-                            const dummyTimestamp = Timestamp.now();
-                            return {
-                                id: m.id,
-                                name: m.name,
-                                imageUrl: m.imageUrl,
-                                createdAt: dummyTimestamp,
-                                updatedAt: dummyTimestamp,
-                                memo: '',
-                            };
-                        })}
+                        scheduledMembers={noAnsweredMembers}
                     />
                 </div>
 
@@ -368,6 +413,15 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     >
                         編集はこちら
                     </Link>
+                )}
+                {me?.role === 'admin' && (
+                    <button
+                        className='block text-center mx-auto mt-10 w-2/3 p-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600'
+                        disabled={disabledRemaind}
+                        onClick={sendRemind}
+                    >
+                        未回答メンバーに通知する
+                    </button>
                 )}
             </div>
         </main>

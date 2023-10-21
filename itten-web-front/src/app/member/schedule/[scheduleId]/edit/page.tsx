@@ -1,6 +1,7 @@
 'use client';
 
 import { Timestamp, DocumentReference, doc, getDoc, runTransaction } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import { PageNotFoundError } from 'next/dist/shared/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -8,7 +9,9 @@ import { useEffect, useState } from 'react';
 import ScheduleForm, { ScheduleTnput } from '../../ScheduleForm';
 import { ScheduleDoc } from '../../schedule';
 import Spinner from '@/app/components/Spinner';
-import { db } from '@/firebase/client';
+import { db, functions } from '@/firebase/client';
+
+const SHOULD_NOTIFY = process.env.NEXT_PUBLIC_SHOULD_NOTIFY === 'true';
 
 type ScheduleEditProps = {
     params: {
@@ -44,6 +47,17 @@ const ScheduleEdit = ({ params }: ScheduleEditProps) => {
             };
             transaction.update(scheduleDocRef, newSchedule);
             console.log('スケジュールを更新しました。', newSchedule);
+            if (SHOULD_NOTIFY) {
+                try {
+                    const lineSendChangeScheduleMessage = httpsCallable(
+                        functions,
+                        'lineSendChangeScheduleMessage',
+                    );
+                    await lineSendChangeScheduleMessage({ scheduleId: scheduleDocRef.id });
+                } catch (e) {
+                    console.error('LINE通知に失敗しました', e);
+                }
+            }
         });
         // スクロールが戻らない
         // router.push('/member/schedule', { scroll: true });
