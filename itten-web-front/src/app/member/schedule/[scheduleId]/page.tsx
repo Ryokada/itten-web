@@ -390,20 +390,36 @@ const ScheduledMemberList = ({
                 <p>{`(${scheduledMembers.length})`}</p>
             </div>
             {scheduledMembers.length > 0 ? (
-                <div className='flex flex-wrap mt-2'>
-                    {scheduledMembers.map((m, i) => {
-                        return (
-                            <div key={`${m.id}`} className='mt-2 mr-3'>
-                                {m.imageUrl ? (
-                                    <SmallIcon src={m.imageUrl} alt={m.name} />
+                <>
+                    <div className='flex flex-wrap mt-2'>
+                        {scheduledMembers.map((m, i) => {
+                            return (
+                                <div key={`${m.id}`} className='mt-2 mr-3'>
+                                    {m.imageUrl ? (
+                                        <SmallIcon src={m.imageUrl} alt={m.name} />
+                                    ) : (
+                                        <div className='h-8 w-8 bg-gray-600 rounded-full'></div>
+                                    )}
+                                    <div className='text-sm'>{m.name ?? 'noname'}</div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    {scheduledMembers.some((m) => m.memo) && (
+                        <div className='my-1 mx-1 py-1 px-2 bg-gray-100 rounded text-sm text-gray-600'>
+                            {scheduledMembers.map((m) =>
+                                m.memo ? (
+                                    <p key={`memo-${m.id}`}>
+                                        {`${m.name}: ${m.memo}`}
+                                        <br />
+                                    </p>
                                 ) : (
-                                    <div className='h-8 w-8 bg-gray-600 rounded-full'></div>
-                                )}
-                                <div className='text-sm'>{m.name ?? 'noname'}</div>
-                            </div>
-                        );
-                    })}
-                </div>
+                                    ''
+                                ),
+                            )}
+                        </div>
+                    )}
+                </>
             ) : (
                 <div className='h-10'>
                     <p className='ml-5 text-gray-700'>なし</p>
