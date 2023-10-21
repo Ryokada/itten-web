@@ -78,6 +78,7 @@ export type ScheduleDoc = {
 export type ScheduledMember = {
     ref?: DocumentReference<Member> | AdminDocumentReference<Member>;
     id: string;
+    lineId?: string;
     name: string;
     imageUrl?: string;
     memo?: string;
@@ -104,20 +105,32 @@ export type ScheduleStatus = 'ok' | 'ng' | 'hold' | null | undefined;
  * @param userId 対象のユーザーID
  * @returns 出欠状況。未登録の場合 null です。
  */
-export const getScheduleState = (schedule: ScheduleDoc, userId: string): ScheduleStatus => {
+export const getScheduleState = (
+    schedule: ScheduleDoc,
+    userId: string,
+): { state: ScheduleStatus; me: ScheduledMember } | null => {
     const ok = schedule.okMembers.find((m) => m.id === userId);
     if (ok) {
-        return 'ok';
+        return {
+            state: 'ok',
+            me: ok,
+        };
     }
 
     const ng = schedule.ngMembers.find((m) => m.id === userId);
     if (ng) {
-        return 'ng';
+        return {
+            state: 'ng',
+            me: ng,
+        };
     }
 
     const hold = schedule.holdMembers.find((m) => m.id === userId);
     if (hold) {
-        return 'hold';
+        return {
+            state: 'hold',
+            me: hold,
+        };
     }
 
     return null;
@@ -146,14 +159,14 @@ export const canEditSchedule = (schedule: ScheduleDoc, me: Member): boolean => {
  * 出欠未回答ユーザーの一覧を取得します
  *
  * @param schedule 対象のスケジュール
- * @param members 全メンバー（要ID）
+ * @param allMembers 全メンバー（要ID）
  * @returns
  */
 export const getNoAnsweredMembers = (
     schedule: ScheduleDoc,
-    members: Array<Member>,
+    allMembers: Array<Member>,
 ): Array<Member> => {
-    return members.filter(
+    return allMembers.filter(
         (m) =>
             !schedule.okMembers.some((ok) => m.id === ok.id) &&
             !schedule.ngMembers.some((ng) => m.id === ng.id) &&

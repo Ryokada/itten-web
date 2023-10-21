@@ -12,8 +12,9 @@ import {
 } from 'firebase/firestore';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { ScheduleDoc } from './schedule';
+import { ScheduleDoc, getScheduleState } from './schedule';
 import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
 import Spinner from '@/app/components/Spinner';
 import { db } from '@/firebase/client';
@@ -23,6 +24,7 @@ import clockIcon from '@public/icons/schedule.svg';
 dayjs.locale(ja);
 
 const Schedule = () => {
+    const { data: session } = useSession();
     const [schedulesDocs, setSchedulesDocs] = useState<QueryDocumentSnapshot<ScheduleDoc>[]>();
 
     useEffect(() => {
@@ -63,7 +65,12 @@ const Schedule = () => {
             <div className='max-w-xl w-full mx-auto'>
                 <div className='flex flex-col'>
                     {schedulesDocs.map((s) => (
-                        <ScheduleRow id={s.id} schedule={s.data()} key={s.id} />
+                        <ScheduleRow
+                            meId={session?.user.uid || ''}
+                            id={s.id}
+                            schedule={s.data()}
+                            key={s.id}
+                        />
                     ))}
                 </div>
             </div>
@@ -74,12 +81,15 @@ const Schedule = () => {
 export default Schedule;
 
 type ScheduleRowProps = {
+    meId: string;
     id: string;
     schedule: ScheduleDoc;
 };
-const ScheduleRow = ({ id, schedule }: ScheduleRowProps) => {
+const ScheduleRow = ({ meId, id, schedule }: ScheduleRowProps) => {
     const startTsDayjs = dayjs(schedule.startTimestamp.toDate());
     const endTsDayjs = dayjs(schedule.endTimestamp.toDate());
+
+    const myStatus = getScheduleState(schedule, meId);
 
     return (
         <Link
@@ -88,32 +98,53 @@ const ScheduleRow = ({ id, schedule }: ScheduleRowProps) => {
             target='_blank'
             rel='noopener noreferrer'
         >
-            <div className='flex border-b border-slate-300 py-4 px-2' id={id}>
-                <div className='flex flex-col justify-center items-center mr-5'>
-                    <div className='mb-1 rounded-full bg-white w-12 h-12 p-1 text-center leading-10 font-bold'>
-                        {startTsDayjs.format('M/D')}
+            <div className='border-b border-slate-300 py-4 px-2'>
+                <div className='flex mb-4' id={id}>
+                    <div className='flex flex-col justify-center items-center mr-5'>
+                        <div className='mb-1 rounded-full bg-white w-12 h-12 p-1 text-center leading-10 font-bold'>
+                            {startTsDayjs.format('M/D')}
+                        </div>
+                        <div className=''>{startTsDayjs.format('dd')}</div>
                     </div>
-                    <div className=''>{startTsDayjs.format('dd')}</div>
+                    <div>
+                        <div className='mt-2 text-sm'>
+                            {schedule.isConfirmed ? (
+                                <p className='text-red-500'>確定</p>
+                            ) : (
+                                <p className='text-gray-500'>未確定</p>
+                            )}
+                        </div>
+                        <h3 className='mb-1 line-clamp-2'>{schedule.title}</h3>
+                        <ScheduleTypeLabel typeId={schedule.type} />
+                        <div className='flex items-center mb-1 text-sm text-gray-700'>
+                            <Image src={clockIcon} alt='' className='w-5 mr-1 fill-gray-700' />
+                            <p>
+                                {startTsDayjs.format('H:mm')} ~ {endTsDayjs.format('H:mm')}
+                            </p>
+                        </div>
+                        <div className='flex items-center text-sm text-gray-700'>
+                            <Image src={locationIcon} alt='' className='w-5 mr-1 fill-gray-700' />
+                            <p>{schedule.placeName}</p>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <div className='mt-2 text-sm'>
-                        {schedule.isConfirmed ? (
-                            <p className='text-red-500'>確定</p>
-                        ) : (
-                            <p className='text-gray-500'>未確定</p>
+                <div className='flex mx-2 text-sm itmes-center'>
+                    <span>自分の回答:</span>
+                    <div className='mx-2'>
+                        {myStatus?.state === 'ok' && (
+                            <span className='px-2 py-0.5 rounded text-white bg-indigo-600'>
+                                参加
+                            </span>
                         )}
-                    </div>
-                    <h3 className='mb-1 line-clamp-2'>{schedule.title}</h3>
-                    <ScheduleTypeLabel typeId={schedule.type} />
-                    <div className='flex items-center mb-1 text-sm text-gray-700'>
-                        <Image src={clockIcon} alt='' className='w-5 mr-1 fill-gray-700' />
-                        <p>
-                            {startTsDayjs.format('H:mm')} ~ {endTsDayjs.format('H:mm')}
-                        </p>
-                    </div>
-                    <div className='flex items-center text-sm text-gray-700'>
-                        <Image src={locationIcon} alt='' className='w-5 mr-1 fill-gray-700' />
-                        <p>{schedule.placeName}</p>
+                        {myStatus?.state === 'ng' && (
+                            <span className='px-2 py-0.5 rounded text-white bg-rose-600'>
+                                不参加
+                            </span>
+                        )}
+                        {myStatus?.state === 'hold' && (
+                            <span className='px-2 py-0.5 rounded text-white bg-teal-600'>保留</span>
+                        )}
+                        {!myStatus && <span className='text-gray-600'>未回答</span>}
                     </div>
                 </div>
             </div>

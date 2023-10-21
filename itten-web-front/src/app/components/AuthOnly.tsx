@@ -47,7 +47,6 @@ const AuthOnly = ({ children }: { children: React.ReactNode }) => {
     if (authenticated) {
         return <>{children}</>;
     } else {
-        console.log('authenticated none');
         <div className='flex flex-col items-center min-h-screen p-24'>
             <Spinner />
         </div>;
