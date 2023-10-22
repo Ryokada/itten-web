@@ -21,14 +21,14 @@ const AuthOnly = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         if (pathname != '/signin' && session?.status === 'unauthenticated') {
-            router.push('/signin');
+            router.push('/signin?from=' + pathname);
         }
         if (
             pathname != '/signin' &&
             session?.status === 'authenticated' &&
             !session?.data.user.emailVerified
         ) {
-            router.push('/signin');
+            router.push('/signin?from=' + pathname);
         }
 
         if (session?.status === 'authenticated' && session?.data.user.emailVerified) {
@@ -38,7 +38,7 @@ const AuthOnly = ({ children }: { children: React.ReactNode }) => {
                     setAuthenticated(true);
                 } else {
                     setAuthenticated(false);
-                    router.push('/signin');
+                    router.push('/signin?from=' + pathname);
                 }
             });
         }
