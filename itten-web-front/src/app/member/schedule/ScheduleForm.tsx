@@ -22,6 +22,7 @@ export type ScheduleTnput = {
 type ScheduleFormProps = {
     onSubmit: (inputData: ScheduleTnput) => Promise<void>;
     submitoBtn: ReactNode;
+    shouldNotifyToggle?: ReactNode;
     cancelTo?: string;
     enabledIsConfirmed?: boolean;
     currentSchedule?: ScheduleDoc;
@@ -36,6 +37,7 @@ const DATETIME_LOCAL_INPUT_FORMAT = 'YYYY-MM-DDTHH:mm';
 const ScheduleForm = ({
     onSubmit,
     submitoBtn,
+    shouldNotifyToggle,
     cancelTo,
     enabledIsConfirmed = false,
     currentSchedule,
@@ -287,6 +289,7 @@ const ScheduleForm = ({
                 </Link>
                 {submitoBtn}
             </div>
+            {shouldNotifyToggle}
         </form>
     );
 };

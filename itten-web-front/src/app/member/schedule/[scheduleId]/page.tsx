@@ -19,6 +19,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { set } from 'react-hook-form';
 import {
     ScheduleDoc,
     comparAscScheduledMemberCreatedAt,
@@ -28,6 +29,7 @@ import {
     getNoAnsweredMembers,
     canEditSchedule,
 } from '../schedule';
+import Dialog from '@/app/components/Dialog';
 import { SmallIcon } from '@/app/components/Icon';
 import Message from '@/app/components/Message';
 import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
@@ -61,6 +63,19 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
     const [disabledRemaind, setDisabledRemaind] = useState(false);
     const [attendanseMemo, setAttendanseMemo] = useState<string>('');
 
+    const [isDialogOpen, setDialogOpen] = useState(false);
+    const [additionalRemindMessage, setAdditionalRemindMessage] = useState('');
+
+    const handleOpenDialog = () => {
+        console.log('handleOpenDialog', isDialogOpen);
+        setDialogOpen(true);
+    };
+
+    const handleCloseDialog = () => {
+        console.log('handleCloseDialog', isDialogOpen);
+        setDialogOpen(false);
+    };
+
     const sendRemind = async () => {
         if (!scheduleDocRef || !noAnsweredMembers || noAnsweredMembers.length === 0) return;
 
@@ -73,12 +88,14 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
             await lineSendRemindInputSchedule({
                 scheduleId: scheduleDocRef.id,
                 toIds: noAnsweredMembers.filter((m) => m.lineId).map((m) => m.lineId),
+                additionalMessage: additionalRemindMessage ?? '',
             });
             setMessage('催促のLINEを送信しました');
         } catch (e) {
             console.error('LINE通知に失敗しました', e);
             setMessage('催促のLINEを送信に失敗しました');
         } finally {
+            setDialogOpen(false);
             setDisabledRemaind(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -415,13 +432,47 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     </Link>
                 )}
                 {me?.role === 'admin' && (
-                    <button
-                        className='block text-center mx-auto mt-10 w-2/3 p-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600'
-                        disabled={disabledRemaind}
-                        onClick={sendRemind}
-                    >
-                        未回答メンバーに通知する
-                    </button>
+                    <>
+                        <button
+                            className='block text-center mx-auto mt-10 w-2/3 p-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600'
+                            onClick={handleOpenDialog}
+                        >
+                            未回答メンバーに通知する
+                        </button>
+                        <Dialog isOpen={isDialogOpen} onClose={handleCloseDialog}>
+                            <div>
+                                <h1 className='mb-2 text-lg'>催促LINEを送ります</h1>
+                                <h2 className='text-sm'>追加メッセージ（省略可）</h2>
+                                <textarea
+                                    className='border rounded-md w-full mb-2 p-2 text-sm'
+                                    value={additionalRemindMessage}
+                                    onChange={(e) => setAdditionalRemindMessage(e.target.value)}
+                                ></textarea>
+                                <div className='mb-5'>
+                                    <ScheduledMemberList
+                                        title='未登録メンバー'
+                                        scheduledMembers={noAnsweredMembers}
+                                    />
+                                </div>
+
+                                <div className='flex w-full space-x-3'>
+                                    <button
+                                        onClick={handleCloseDialog}
+                                        className='w-1/2 p-2 bg-gray-400 text-white rounded-md hover:bg-gray-600'
+                                    >
+                                        閉じる
+                                    </button>
+                                    <button
+                                        onClick={sendRemind}
+                                        className='w-1/2 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600'
+                                        disabled={disabledRemaind}
+                                    >
+                                        送信
+                                    </button>
+                                </div>
+                            </div>
+                        </Dialog>
+                    </>
                 )}
             </div>
         </main>
