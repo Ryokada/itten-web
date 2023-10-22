@@ -1,6 +1,7 @@
 'use client';
 
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useSearchParams } from 'next/navigation';
 import { signIn as signInByNextAuth } from 'next-auth/react';
 
 import { useState } from 'react';
@@ -16,6 +17,8 @@ const SingIn = () => {
     const [disabled, setDisabled] = useState(false);
     const [message, setMessage] = useState<string>('');
 
+    const searchParams = useSearchParams();
+
     const signIn = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!email) return;
@@ -28,10 +31,11 @@ const SingIn = () => {
                 setMessage('メールアドレスを確認してください');
                 return;
             }
+            const fromPatn = searchParams.get('from');
             const idToken = await userCredential.user.getIdToken();
             await signInByNextAuth('credentials', {
                 idToken,
-                callbackUrl: '/member/mypage',
+                callbackUrl: fromPatn ?? '/member/mypage',
             });
         } catch (e) {
             console.error(e);
