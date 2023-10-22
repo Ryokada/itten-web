@@ -171,7 +171,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     createdAt: Timestamp.fromDate(now),
                     updatedAt: Timestamp.fromDate(now),
                     memo: attendanseMemo ?? '',
-                    lineId: me?.lineId,
+                    lineId: me?.lineId ?? '',
                 };
 
                 await runTransaction(db, async (transaction) => {
