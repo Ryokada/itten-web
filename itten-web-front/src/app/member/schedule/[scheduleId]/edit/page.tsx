@@ -24,8 +24,14 @@ const ScheduleEdit = ({ params }: ScheduleEditProps) => {
     const { data: session } = useSession();
     const [member, setMember] = useState<Member>();
     const [scheduleDocRef, setScheduleDocRef] = useState<DocumentReference<ScheduleDoc>>();
+    const [shouldNotify, setShouldNotify] = useState(false);
     const [schedule, setSchedule] = useState<ScheduleDoc>();
     const [disabled, setDisabled] = useState(false);
+
+    const onShouldNotifyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        e.target.checked ? setShouldNotify(true) : setShouldNotify(false);
+    };
 
     const onSubmit = async (inputData: ScheduleTnput) => {
         if (!session || !schedule || !scheduleDocRef) return;
@@ -49,7 +55,7 @@ const ScheduleEdit = ({ params }: ScheduleEditProps) => {
                 };
                 transaction.update(scheduleDocRef, newSchedule);
                 console.log('スケジュールを更新しました。', newSchedule);
-                if (SHOULD_NOTIFY) {
+                if (SHOULD_NOTIFY && shouldNotify) {
                     try {
                         const lineSendChangeScheduleMessage = httpsCallable(
                             functions,
@@ -119,9 +125,38 @@ const ScheduleEdit = ({ params }: ScheduleEditProps) => {
                         <button
                             type='submit'
                             className='w-1/2 p-2 bg-green-500 text-white rounded-md hover:bg-green-600'
+                            disabled={disabled}
                         >
                             更新
                         </button>
+                    }
+                    shouldNotifyToggle={
+                        <div className='flex justify-end'>
+                            <span className='mb-2 font-semibold text-gray-600 mr-2'>通知</span>
+                            <div className='flex'>
+                                <label
+                                    htmlFor='shouldNotify'
+                                    className='relative inline-block w-10 h-6 mr-5'
+                                >
+                                    <input
+                                        id='shouldNotify'
+                                        type='checkbox'
+                                        className='hidden'
+                                        onChange={onShouldNotifyChange}
+                                    />
+                                    <div
+                                        className={`block w-12 h-6 rounded-full absolute top-0 left-0 transition ${
+                                            shouldNotify ? 'bg-blue-500' : 'bg-gray-400'
+                                        }`}
+                                    />
+                                    <div
+                                        className={`block w-6 h-6 bg-white rounded-full absolute top-0 left-0 transform-gpu transition-transform duration-300 ease-in-out ${
+                                            shouldNotify ? 'translate-x-full' : ''
+                                        }`}
+                                    />
+                                </label>
+                            </div>
+                        </div>
                     }
                 />
             </div>
