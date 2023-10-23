@@ -34,7 +34,10 @@ import { SmallIcon } from '@/app/components/Icon';
 import Message from '@/app/components/Message';
 import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
 import Spinner from '@/app/components/Spinner';
+import ICalLink from '@/app/components/calender/ICalLink';
+import { ICAL_TIMESTAMP_FORMAT } from '@/app/utiles/calenderFormats';
 import { db, functions } from '@/firebase/client';
+import calenderIcon from '@public/icons/calender.svg';
 import locationIcon from '@public/icons/location_on.svg';
 import clockIcon from '@public/icons/schedule.svg';
 
@@ -423,6 +426,43 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     />
                 </div>
 
+                <div className='flex w-full space-x-3 mt-10 justify-center'>
+                    <div className='flex'>
+                        <Image src={calenderIcon} alt='' className='w-5 mr-0.5 fill-gray-700' />
+                        <a
+                            className='text-sm'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            href={`/api/calender?start=${startTsDayjs.format(
+                                ICAL_TIMESTAMP_FORMAT,
+                            )}&end=${endTsDayjs.format(ICAL_TIMESTAMP_FORMAT)}&summary=${
+                                schedule.title
+                            }&description=${schedule.memo}&location=${schedule.placeName}&url=${
+                                window.location.href
+                            }`}
+                        >
+                            iPhoneカレンダー
+                        </a>
+                    </div>
+                    <div className='flex'>
+                        <Image src={calenderIcon} alt='' className='w-5 mr-0.5 fill-gray-700' />
+                        <a
+                            className='text-sm'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            href={`https://www.google.com/calendar/render?action=TEMPLATE&text=${
+                                schedule.title
+                            }&dates=${startTsDayjs.format(
+                                ICAL_TIMESTAMP_FORMAT,
+                            )}%2F${endTsDayjs.format(ICAL_TIMESTAMP_FORMAT)}&details=${
+                                schedule.memo
+                            }&location=${schedule.placeName}&ctz=Asia%2FTokyo`}
+                        >
+                            Googleカレンダー
+                        </a>
+                    </div>
+                </div>
+
                 {me && canEditSchedule(schedule, me) && (
                     <Link
                         href={`/member/schedule/${params.scheduleId}/edit`}
@@ -464,7 +504,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                                     </button>
                                     <button
                                         onClick={sendRemind}
-                                        className='w-1/2 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600'
+                                        className='w-1/2 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed'
                                         disabled={disabledRemaind}
                                     >
                                         送信
