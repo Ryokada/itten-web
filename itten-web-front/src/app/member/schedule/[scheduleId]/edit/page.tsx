@@ -69,7 +69,7 @@ const ScheduleEdit = ({ params }: ScheduleEditProps) => {
             });
             // スクロールが戻らない
             // router.push('/member/schedule', { scroll: true });
-            // window.location.href = `/member/schedule/${params.scheduleId}`;
+            window.location.href = `/member/schedule/${params.scheduleId}`;
         } finally {
             setDisabled(false);
         }

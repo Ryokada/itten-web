@@ -25,13 +25,25 @@ const OpenSchedule = async () => {
         .startAt(new Date())
         .get();
 
-    const schedulesDocs = schedulesSnapshots.docs;
+    const openedSchedulesDocs = schedulesSnapshots.docs.filter((s) => s.data().isOpened);
 
+    if (openedSchedulesDocs.length === 0) {
+        return (
+            <main className='flex flex-col items-center min-h-screen py-5 px-10'>
+                <div className='max-w-xl w-full space-y-5'>
+                    <div className='text-center'>
+                        <p className='text-xl'>公開スケジュールはありません</p>
+                    </div>
+                </div>
+            </main>
+        );
+    }
     return (
         <main className='min-h-screen py-5 px-10'>
             <div className='max-w-xl w-full mx-auto'>
+                {}
                 <div className='flex flex-col'>
-                    {schedulesDocs.map((s) => (
+                    {openedSchedulesDocs.map((s) => (
                         <ScheduleRow id={s.id} schedule={s.data()} key={s.id} />
                     ))}
                 </div>

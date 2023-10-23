@@ -381,6 +381,13 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 {/* スケジュール種別 */}
                 <ScheduleTypeLabel typeId={schedule.type} />
 
+                {/* 公開 or 非公開 */}
+                {schedule.isOpened ? (
+                    <div className='text-sm font-bold text-green-600'>{'公開'}</div>
+                ) : (
+                    <div className='text-sm'>{'非公開'}</div>
+                )}
+
                 {/* 対戦相手 */}
                 {schedule.vs && <div className=''>vs {schedule.vs}</div>}
 
@@ -522,7 +529,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
 
                 {me && canEditSchedule(schedule, me) && (
                     <Link
-                        href={`/member/schedule/${params.scheduleId}/edit`}
+                        href={`/member/schedule/${params.scheduleId}/edit#top`}
                         className='block text-center mx-auto mt-10 w-2/3 p-2 bg-green-500 text-white rounded-md hover:bg-green-600'
                     >
                         編集はこちら

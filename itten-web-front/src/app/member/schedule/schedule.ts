@@ -78,6 +78,11 @@ export type ScheduleDoc = {
      * 助っ人メンバー
      */
     helpMembers?: Array<HelpMember>;
+
+    /**
+     * メンバー以外に公開するかどうか
+     */
+    isOpened?: boolean;
 };
 
 export type ScheduledMember = {
