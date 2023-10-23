@@ -19,7 +19,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { set } from 'react-hook-form';
 import {
     ScheduleDoc,
     comparAscScheduledMemberCreatedAt,
@@ -34,7 +33,6 @@ import { SmallIcon } from '@/app/components/Icon';
 import Message from '@/app/components/Message';
 import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
 import Spinner from '@/app/components/Spinner';
-import ICalLink from '@/app/components/calender/ICalLink';
 import { ICAL_TIMESTAMP_FORMAT } from '@/app/utiles/calenderFormats';
 import { db, functions } from '@/firebase/client';
 import calenderIcon from '@public/icons/calender.svg';
