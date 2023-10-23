@@ -19,7 +19,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { set } from 'react-hook-form';
+import HeloMemberForm from '../HelpMemberForm';
 import {
     ScheduleDoc,
     comparAscScheduledMemberCreatedAt,
@@ -28,13 +28,16 @@ import {
     ScheduleStatus,
     getNoAnsweredMembers,
     canEditSchedule,
+    HelpMember,
 } from '../schedule';
 import Dialog from '@/app/components/Dialog';
 import { SmallIcon } from '@/app/components/Icon';
 import Message from '@/app/components/Message';
 import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
 import Spinner from '@/app/components/Spinner';
+import { ICAL_TIMESTAMP_FORMAT } from '@/app/utiles/calenderFormats';
 import { db, functions } from '@/firebase/client';
+import calenderIcon from '@public/icons/calender.svg';
 import locationIcon from '@public/icons/location_on.svg';
 import clockIcon from '@public/icons/schedule.svg';
 
@@ -50,7 +53,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
     const { data: session } = useSession();
     const [scheduleDocRef, setScheduleDocRef] = useState<DocumentReference<ScheduleDoc>>();
     const [schedule, setSchedule] = useState<ScheduleDoc>();
-    const [members, setMembers] = useState<Member[]>([]);
+    const [allMembers, setAllMembers] = useState<Member[]>([]);
     const [noAnsweredMembers, setNoAnsweredMembers] = useState<ScheduledMember[]>([]);
     const [me, setMe] = useState<Member>();
     const [scheduleStatus, setScheduleStatus] = useState<ScheduleStatus>();
@@ -63,17 +66,25 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
     const [disabledRemaind, setDisabledRemaind] = useState(false);
     const [attendanseMemo, setAttendanseMemo] = useState<string>('');
 
-    const [isDialogOpen, setDialogOpen] = useState(false);
+    const [isNotifyDialogOpen, setNotifyDialogOpen] = useState(false);
     const [additionalRemindMessage, setAdditionalRemindMessage] = useState('');
 
-    const handleOpenDialog = () => {
-        console.log('handleOpenDialog', isDialogOpen);
-        setDialogOpen(true);
+    const handleOpenNotifyDialog = () => {
+        setNotifyDialogOpen(true);
     };
 
-    const handleCloseDialog = () => {
-        console.log('handleCloseDialog', isDialogOpen);
-        setDialogOpen(false);
+    const handleCloseNotifyDialog = () => {
+        setNotifyDialogOpen(false);
+    };
+
+    const [isAddHelperDialogOpen, setAddHelperDialogOpen] = useState(false);
+
+    const handleOpenAddHelperDialog = () => {
+        setAddHelperDialogOpen(true);
+    };
+
+    const handleCloseAddHelperDialog = () => {
+        setAddHelperDialogOpen(false);
     };
 
     const sendRemind = async () => {
@@ -95,8 +106,31 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
             console.error('LINE通知に失敗しました', e);
             setMessage('催促のLINEを送信に失敗しました');
         } finally {
-            setDialogOpen(false);
+            setNotifyDialogOpen(false);
             setDisabledRemaind(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const updateHelpMembers = async (members: HelpMember[]) => {
+        if (!scheduleDocRef) return;
+        try {
+            await runTransaction(db, async (transaction) => {
+                const sfDoc = await transaction.get(scheduleDocRef);
+                if (!sfDoc.exists()) {
+                    throw Error('対象のスケージュールが存在しません');
+                }
+
+                const updateTarget = sfDoc.data();
+                transaction.update(scheduleDocRef, { ...updateTarget, helpMembers: members });
+                setSchedule({ ...updateTarget, helpMembers: members });
+            });
+            setMessage('助っ人を更新しました');
+        } catch (e) {
+            console.error('助っ人の更新に失敗しました', e);
+            setMessage('助っ人の更新に失敗しました');
+        } finally {
+            setAddHelperDialogOpen(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
@@ -168,6 +202,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     break;
                 }
                 default: {
+                    console.error;
                     throw new Error('invalid status');
                 }
             }
@@ -212,7 +247,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     transaction.update(scheduleDocRef, newSchedule);
                     setSchedule(newSchedule);
                     setNoAnsweredMembers(
-                        getNoAnsweredMembers(newSchedule, members).map((m) => {
+                        getNoAnsweredMembers(newSchedule, allMembers).map((m) => {
                             const dummyTimestamp = Timestamp.now();
                             return {
                                 id: m.id,
@@ -261,7 +296,9 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 setScheduleStatus(attendanse?.state);
                 setAttendanseMemo(attendanse?.me.memo ?? '');
             } else {
-                throw new PageNotFoundError('schedule');
+                console.error('スケジュールが見つかりませんでした');
+                window.location.href = '/member/schedule-notfound';
+                return;
             }
 
             const membersDocs = await getDocs(membersQuery);
@@ -273,7 +310,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     setMe(d.data());
                 }
             });
-            setMembers(newMembers);
+            setAllMembers(newMembers);
             setNoAnsweredMembers(
                 getNoAnsweredMembers(scheduleInfo, newMembers).map((m) => {
                     const dummyTimestamp = Timestamp.now();
@@ -344,6 +381,13 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 {/* スケジュール種別 */}
                 <ScheduleTypeLabel typeId={schedule.type} />
 
+                {/* 公開 or 非公開 */}
+                {schedule.isOpened ? (
+                    <div className='text-sm font-bold text-green-600'>{'公開'}</div>
+                ) : (
+                    <div className='text-sm'>{'非公開'}</div>
+                )}
+
                 {/* 対戦相手 */}
                 {schedule.vs && <div className=''>vs {schedule.vs}</div>}
 
@@ -405,10 +449,33 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
 
                 {/* 出欠メンバー */}
                 <div className='flex flex-col space-y-3'>
-                    <ScheduledMemberList
-                        title='出席メンバー'
-                        scheduledMembers={schedule.okMembers}
-                    />
+                    <div>
+                        <ScheduledMemberList
+                            title='出席メンバー'
+                            scheduledMembers={schedule.okMembers}
+                        />
+                        <div className='mt-2'>
+                            <div className='flex text-sm text-gray-600'>
+                                <p>助っ人</p>
+                                <p>{`(${schedule.helpMembers?.length ?? 0})`}</p>
+                            </div>
+                            {schedule.helpMembers && schedule.helpMembers.length > 0 && (
+                                <div className='flex space-x-3'>
+                                    {schedule.helpMembers.map((m) => {
+                                        return (
+                                            <div
+                                                key={`helper${m.name}`}
+                                                className='flex space-x-0.5'
+                                            >
+                                                <p>{m.name}</p>
+                                                <p>{`(${m.memo ?? ''})`}</p>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    </div>
                     <ScheduledMemberList
                         title='欠席メンバー'
                         scheduledMembers={schedule.ngMembers}
@@ -423,9 +490,46 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     />
                 </div>
 
+                <div className='flex w-full space-x-3 mt-10 justify-center'>
+                    <div className='flex'>
+                        <Image src={calenderIcon} alt='' className='w-5 mr-0.5 fill-gray-700' />
+                        <a
+                            className='text-sm'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            href={`/api/calender?start=${startTsDayjs.format(
+                                ICAL_TIMESTAMP_FORMAT,
+                            )}&end=${endTsDayjs.format(ICAL_TIMESTAMP_FORMAT)}&summary=${
+                                schedule.title
+                            }&description=${schedule.memo}&location=${schedule.placeName}&url=${
+                                window.location.href
+                            }`}
+                        >
+                            iPhoneカレンダー
+                        </a>
+                    </div>
+                    <div className='flex'>
+                        <Image src={calenderIcon} alt='' className='w-5 mr-0.5 fill-gray-700' />
+                        <a
+                            className='text-sm'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            href={`https://www.google.com/calendar/render?action=TEMPLATE&text=${
+                                schedule.title
+                            }&dates=${startTsDayjs.format(
+                                ICAL_TIMESTAMP_FORMAT,
+                            )}%2F${endTsDayjs.format(ICAL_TIMESTAMP_FORMAT)}&details=${
+                                schedule.memo
+                            }&location=${schedule.placeName}&ctz=Asia%2FTokyo`}
+                        >
+                            Googleカレンダー
+                        </a>
+                    </div>
+                </div>
+
                 {me && canEditSchedule(schedule, me) && (
                     <Link
-                        href={`/member/schedule/${params.scheduleId}/edit`}
+                        href={`/member/schedule/${params.scheduleId}/edit#top`}
                         className='block text-center mx-auto mt-10 w-2/3 p-2 bg-green-500 text-white rounded-md hover:bg-green-600'
                     >
                         編集はこちら
@@ -435,11 +539,11 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     <>
                         <button
                             className='block text-center mx-auto mt-10 w-2/3 p-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600'
-                            onClick={handleOpenDialog}
+                            onClick={handleOpenNotifyDialog}
                         >
-                            未回答メンバーに通知する
+                            未回答メンバーに催促
                         </button>
-                        <Dialog isOpen={isDialogOpen} onClose={handleCloseDialog}>
+                        <Dialog isOpen={isNotifyDialogOpen} onClose={handleCloseNotifyDialog}>
                             <div>
                                 <h1 className='mb-2 text-lg'>催促LINEを送ります</h1>
                                 <h2 className='text-sm'>追加メッセージ（省略可）</h2>
@@ -457,19 +561,34 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
 
                                 <div className='flex w-full space-x-3'>
                                     <button
-                                        onClick={handleCloseDialog}
+                                        onClick={handleCloseNotifyDialog}
                                         className='w-1/2 p-2 bg-gray-400 text-white rounded-md hover:bg-gray-600'
                                     >
                                         閉じる
                                     </button>
                                     <button
                                         onClick={sendRemind}
-                                        className='w-1/2 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600'
+                                        className='w-1/2 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed'
                                         disabled={disabledRemaind}
                                     >
                                         送信
                                     </button>
                                 </div>
+                            </div>
+                        </Dialog>
+                        <button
+                            className='block text-center mx-auto mt-5 w-2/3 p-2 bg-gray-500 text-white rounded-md hover:bg-gray-600'
+                            onClick={handleOpenAddHelperDialog}
+                        >
+                            助っ人編集
+                        </button>
+                        <Dialog isOpen={isAddHelperDialogOpen} onClose={handleCloseAddHelperDialog}>
+                            <div>
+                                <HeloMemberForm
+                                    close={() => handleCloseAddHelperDialog()}
+                                    onSubmit={updateHelpMembers}
+                                    members={schedule.helpMembers ?? []}
+                                />
                             </div>
                         </Dialog>
                     </>
@@ -490,7 +609,7 @@ const ScheduledMemberList = ({
 }) => {
     return (
         <div>
-            <div className='flex'>
+            <div className='flex font-bold'>
                 <p>{title}</p>
                 <p>{`(${scheduledMembers.length})`}</p>
             </div>

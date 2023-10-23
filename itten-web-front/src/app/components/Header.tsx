@@ -7,6 +7,7 @@ import useIsDesktop from '@/app/hooks/useIsDesktop';
 
 const menuLinks = [
     { label: 'トップ', href: '/' },
+    { label: '公開スケジュール', href: '/open/schedule' },
     { label: 'マイページ', href: '/member/mypage' },
     { label: 'スケジュール', href: '/member/schedule' },
     { label: 'スケジュール追加', href: '/member/schedule/add' },

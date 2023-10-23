@@ -73,6 +73,16 @@ export type ScheduleDoc = {
      * 参加保留者
      */
     holdMembers: Array<ScheduledMember>;
+
+    /**
+     * 助っ人メンバー
+     */
+    helpMembers?: Array<HelpMember>;
+
+    /**
+     * メンバー以外に公開するかどうか
+     */
+    isOpened?: boolean;
 };
 
 export type ScheduledMember = {
@@ -84,6 +94,12 @@ export type ScheduledMember = {
     memo?: string;
     createdAt: Timestamp;
     updatedAt: Timestamp;
+};
+
+export type HelpMember = {
+    id: string;
+    name: string;
+    memo?: string;
 };
 
 /**
