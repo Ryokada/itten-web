@@ -32,6 +32,7 @@ const ScheduleAdd = () => {
                 okMembers: [],
                 ngMembers: [],
                 holdMembers: [],
+                helpMembers: [],
             };
             const schedulesCollection = collection(db, 'schedules');
             const deoRef = await addDoc(schedulesCollection, newSchedule);
