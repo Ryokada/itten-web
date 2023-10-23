@@ -17,7 +17,7 @@ export type ScheduleTnput = {
     memo: string;
     isHome: boolean;
     isConfirmed?: boolean;
-    isOpened?: boolean;
+    isOpened: boolean;
 };
 
 type ScheduleFormProps = {
@@ -58,17 +58,35 @@ const ScheduleForm = ({
         defaultValue: currentSchedule?.isHome ?? true,
     });
 
+    useEffect(() => {
+        if (watchIsHome) {
+            setValue('isHome', watchIsHome.valueOf());
+        }
+    }, [watchIsHome, setValue]);
+
     const watchIsConfirmed = useWatch({
         control,
         name: 'isConfirmed',
         defaultValue: currentSchedule?.isConfirmed ?? false,
     });
 
+    useEffect(() => {
+        if (watchIsConfirmed) {
+            setValue('isConfirmed', watchIsConfirmed.valueOf());
+        }
+    }, [watchIsConfirmed, setValue]);
+
     const watchIsOpened = useWatch({
         control,
         name: 'isOpened',
         defaultValue: currentSchedule?.isOpened ?? true, //デフォルトは公開
     });
+
+    useEffect(() => {
+        if (watchIsOpened) {
+            setValue('isOpened', watchIsOpened.valueOf());
+        }
+    }, [watchIsOpened, setValue]);
 
     const watchStartTimestamp = useWatch({
         control,
