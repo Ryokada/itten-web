@@ -169,6 +169,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                     break;
                 }
                 default: {
+                    console.error;
                     throw new Error('invalid status');
                 }
             }
@@ -262,7 +263,9 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 setScheduleStatus(attendanse?.state);
                 setAttendanseMemo(attendanse?.me.memo ?? '');
             } else {
-                throw new PageNotFoundError('schedule');
+                console.error('スケジュールが見つかりませんでした');
+                window.location.href = '/member/schedule-notfound';
+                return;
             }
 
             const membersDocs = await getDocs(membersQuery);

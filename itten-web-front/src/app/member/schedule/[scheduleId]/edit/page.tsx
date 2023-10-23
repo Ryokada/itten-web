@@ -95,7 +95,9 @@ const ScheduleEdit = ({ params }: ScheduleEditProps) => {
             const scheduleInfo = scheduleDoc.data();
 
             if (!memberInfo || !scheduleInfo) {
-                throw new PageNotFoundError('schedule edit page not found');
+                console.error('スケジュールが見つかりませんでした');
+                window.location.href = '/member/schedule-notfound';
+                return;
             }
 
             // 編集ページを開けるのは作成者と管理者のみ
