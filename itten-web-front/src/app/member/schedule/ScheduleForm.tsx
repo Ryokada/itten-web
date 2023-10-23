@@ -17,6 +17,7 @@ export type ScheduleTnput = {
     memo: string;
     isHome: boolean;
     isConfirmed?: boolean;
+    isOpened?: boolean;
 };
 
 type ScheduleFormProps = {
@@ -63,6 +64,12 @@ const ScheduleForm = ({
         defaultValue: currentSchedule?.isConfirmed ?? false,
     });
 
+    const watchIsOpened = useWatch({
+        control,
+        name: 'isOpened',
+        defaultValue: currentSchedule?.isOpened ?? true, //デフォルトは公開
+    });
+
     const watchStartTimestamp = useWatch({
         control,
         name: 'startTimestamp',
@@ -103,6 +110,33 @@ const ScheduleForm = ({
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className='p-4 space-y-4 bg-gray-100'>
+            <div className='flex flex-col'>
+                <span className='mb-2 font-semibold text-gray-600'>公開</span>
+                <div className='flex'>
+                    <label htmlFor='isOpened' className='relative inline-block w-10 h-6 mr-5'>
+                        <input
+                            id='isOpened'
+                            type='checkbox'
+                            {...register('isOpened')}
+                            className='hidden'
+                        />
+                        <div
+                            className={`block w-12 h-6 rounded-full absolute top-0 left-0 transition ${
+                                watchIsOpened ? 'bg-blue-500' : 'bg-gray-400'
+                            }`}
+                        />
+                        <div
+                            className={`block w-6 h-6 bg-white rounded-full absolute top-0 left-0 transform-gpu transition-transform duration-300 ease-in-out ${
+                                watchIsOpened ? 'translate-x-full' : ''
+                            }`}
+                        />
+                    </label>
+                    <p className='text-gray-600'>{watchIsOpened ? '公開' : '未公開'}</p>
+                </div>
+                {errors.isOpened && (
+                    <span className='text-red-500 text-xs'>{errors.isOpened.message}</span>
+                )}
+            </div>
             {enabledIsConfirmed && (
                 <div className='flex flex-col'>
                     <span className='mb-2 font-semibold text-gray-600'>確定</span>

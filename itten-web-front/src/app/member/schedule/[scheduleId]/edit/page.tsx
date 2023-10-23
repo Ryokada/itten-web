@@ -69,7 +69,7 @@ const ScheduleEdit = ({ params }: ScheduleEditProps) => {
             });
             // スクロールが戻らない
             // router.push('/member/schedule', { scroll: true });
-            // window.location.href = `/member/schedule/${params.scheduleId}`;
+            window.location.href = `/member/schedule/${params.scheduleId}`;
         } finally {
             setDisabled(false);
         }
@@ -95,7 +95,9 @@ const ScheduleEdit = ({ params }: ScheduleEditProps) => {
             const scheduleInfo = scheduleDoc.data();
 
             if (!memberInfo || !scheduleInfo) {
-                throw new PageNotFoundError('schedule edit page not found');
+                console.error('スケジュールが見つかりませんでした');
+                window.location.href = '/member/schedule-notfound';
+                return;
             }
 
             // 編集ページを開けるのは作成者と管理者のみ
