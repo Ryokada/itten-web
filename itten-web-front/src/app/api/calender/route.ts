@@ -4,6 +4,8 @@ import ical from 'ical-generator';
 import { type NextRequest } from 'next/server';
 import { ICAL_TIMESTAMP_FORMAT } from '@/app/utiles/calenderFormats';
 
+dayjs.locale(ja);
+
 export async function GET(request: NextRequest) {
     if (request.method !== 'GET') {
         return new Response('Method Not Allowed', {
