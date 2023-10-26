@@ -1,18 +1,24 @@
 'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import logo from '../../../public/itten-logo.png';
 import HambugerMenu from '@/app/components/HamburgerMenu';
 import useIsDesktop from '@/app/hooks/useIsDesktop';
 
-const menuLinks = [
+const menuLinksForMember = [
     { label: 'トップ', href: '/' },
-    { label: '公開スケジュール', href: '/open/schedule' },
     { label: 'マイページ', href: '/member/mypage' },
     { label: 'スケジュール', href: '/member/schedule' },
     { label: 'スケジュール追加', href: '/member/schedule/add' },
-    { label: 'ログイン', href: '/signin' },
     { label: 'ログアウト', href: '/signout' },
+];
+
+const menuLinksForGuest = [
+    { label: 'トップ', href: '/' },
+    { label: '公開スケジュール', href: '/open/schedule' },
+    { label: 'ログイン', href: '/signin' },
 ];
 
 /**
@@ -21,6 +27,12 @@ const menuLinks = [
  */
 export default function Header() {
     const [isDesktop] = useIsDesktop();
+    const { data: session } = useSession();
+
+    let menuLinks = menuLinksForGuest;
+    if (session) {
+        menuLinks = menuLinksForMember;
+    }
 
     return (
         <header>
