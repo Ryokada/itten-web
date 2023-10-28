@@ -19,6 +19,7 @@ import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
 import Spinner from '@/app/components/Spinner';
 import { db } from '@/firebase/client';
 import locationIcon from '@public/icons/location_on.svg';
+import peoplesIcon from '@public/icons/peoples.svg';
 import clockIcon from '@public/icons/schedule.svg';
 
 dayjs.locale(ja);
@@ -99,7 +100,7 @@ const ScheduleRow = ({ meId, id, schedule }: ScheduleRowProps) => {
             rel='noopener noreferrer'
         >
             <div className='border-b border-slate-300 py-4 px-2'>
-                <div className='flex mb-4' id={id}>
+                <div className='flex mb-1.5' id={id}>
                     <div className='flex flex-col justify-center items-center mr-5'>
                         <div className='mb-1 rounded-full bg-white w-12 h-12 p-1 text-center leading-10 font-bold'>
                             {startTsDayjs.format('M/D')}
@@ -116,6 +117,15 @@ const ScheduleRow = ({ meId, id, schedule }: ScheduleRowProps) => {
                         </div>
                         <h3 className='mb-1 line-clamp-2'>{schedule.title}</h3>
                         <ScheduleTypeLabel typeId={schedule.type} />
+                        <div className='flex items-center mb-1 text-sm text-gray-700'>
+                            <Image src={peoplesIcon} alt='' className='w-5 mr-1 fill-gray-700' />
+                            <div className='flex space-x-1'>
+                                <p>{`(出)${schedule.okMembers.length}`}</p>
+                                <p>{`(助)${schedule.helpMembers?.length ?? 0}`}</p>
+                                <p>{`(欠)${schedule.ngMembers.length}`}</p>
+                                <p>{`(保)${schedule.holdMembers.length}`}</p>
+                            </div>
+                        </div>
                         <div className='flex items-center mb-1 text-sm text-gray-700'>
                             <Image src={clockIcon} alt='' className='w-5 mr-1 fill-gray-700' />
                             <p>
