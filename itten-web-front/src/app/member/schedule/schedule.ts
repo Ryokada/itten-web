@@ -83,6 +83,11 @@ export type ScheduleDoc = {
      * メンバー以外に公開するかどうか
      */
     isOpened?: boolean;
+
+    /**
+     * 削除済みかどうか
+     */
+    isDeleted?: boolean;
 };
 
 export type ScheduledMember = {

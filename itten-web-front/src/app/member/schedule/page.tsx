@@ -37,7 +37,7 @@ const Schedule = () => {
         (async () => {
             const schedulesSnapshots = await getDocs(q);
             const sDocs = schedulesSnapshots.docs as QueryDocumentSnapshot<ScheduleDoc>[];
-            setSchedulesDocs(sDocs);
+            setSchedulesDocs(sDocs.filter((s) => !s.data().isDeleted));
         })();
     }, []);
 
