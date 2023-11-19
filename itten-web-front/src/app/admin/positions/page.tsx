@@ -20,20 +20,6 @@ const PostionsList = () => {
             newMembers.push({ ...d.data(), id: d.id });
         });
 
-        let dummyCount = 20;
-        // ダミーデータを追加
-        for (let i = 0; i < dummyCount; i++) {
-            const dummyMember: Member = {
-                id: `dummy${i}`,
-                email: `dummy${i}@example.com`,
-                number: `${i + 90}`,
-                name: `ダミー${i}`,
-                role: 'member',
-                desiredPositions: ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
-            };
-            newMembers.push(dummyMember);
-        }
-
         return newMembers;
     };
 
