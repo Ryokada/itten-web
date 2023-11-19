@@ -129,7 +129,7 @@ const ScheduleForm = ({
     return (
         <form onSubmit={handleSubmit(onSubmit)} className='p-4 space-y-4 bg-gray-100'>
             <div className='flex flex-col'>
-                <span className='mb-2 font-semibold text-gray-600'>公開</span>
+                <span className='mb-2 font-semibold text-gray-600'>外部公開</span>
                 <div className='flex'>
                     <label htmlFor='isOpened' className='relative inline-block w-10 h-6 mr-5'>
                         <input
