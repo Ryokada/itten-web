@@ -1,4 +1,4 @@
-type Position = {
+export type Position = {
     /**
      * ラベル（一文字）
      */
@@ -73,9 +73,18 @@ export const positionsMaster: Dictionary<Position> = {
 
 type PostionProps = {
     /**
-     * ポジション番号
+     * ポジション番号（positionsMasterのキー）
+     *
+     * positionがある場合は無視される。
      */
-    positionNumber: string;
+    positionNumber?: string;
+
+    /**
+     * ポジション。
+     *
+     * この値がある場合は、positionNumberは無視される。
+     */
+    position?: Position;
 };
 
 /**
@@ -85,14 +94,21 @@ type PostionProps = {
  *
  * @param positionNumber ポジション番号
  */
-export const PostionLabel = ({ positionNumber }: PostionProps) => {
-    const postion = positionsMaster[positionNumber];
+export const PostionLabel = ({ positionNumber, position }: PostionProps) => {
+    let displayPosition = position;
+    if (!position) {
+        if (!positionNumber) {
+            throw new Error('positionNumber is required');
+        }
+        displayPosition = positionsMaster[positionNumber];
+    }
+
     const style = {
-        color: postion.color,
+        color: displayPosition?.color ?? 'black',
     };
     return (
         <span className='font-bold' style={style}>
-            {postion.label}
+            {displayPosition?.label ?? 'なし'}
         </span>
     );
 };
