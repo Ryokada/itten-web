@@ -60,6 +60,9 @@ const Mypage = () => {
                         <div className=''>
                             <div className='text-xl font-bold mr-3'>No. {member.number}</div>
                             <div className='text-3xl'>{member.name}</div>
+                            {member.lineName && (
+                                <div className='text-gray-600'>LINE: {member.lineName}</div>
+                            )}
                         </div>
                     </div>
                 </div>
