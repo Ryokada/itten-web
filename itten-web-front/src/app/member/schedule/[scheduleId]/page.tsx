@@ -32,7 +32,7 @@ import {
     HelpMember,
 } from '../schedule';
 import Dialog from '@/app/components/Dialog';
-import { SmallIcon } from '@/app/components/Icon';
+import { MemberIcon, SmallIcon } from '@/app/components/Icon';
 import Message from '@/app/components/Message';
 import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
 import Spinner from '@/app/components/Spinner';
@@ -674,12 +674,8 @@ const ScheduledMemberList = ({
                         {scheduledMembers.map((m, i) => {
                             return (
                                 <div key={`${m.id}`} className='mt-2 mr-3'>
-                                    {m.imageUrl ? (
-                                        <SmallIcon src={m.imageUrl} alt={m.name} />
-                                    ) : (
-                                        <div className='h-8 w-8 bg-gray-600 rounded-full'></div>
-                                    )}
-                                    <div className='text-sm'>{m.name ?? 'noname'}</div>
+                                    <MemberIcon id={m.id} imageUrl={m.imageUrl} name={m.name} />
+                                    <div className='text-sm w-max'>{m.name ?? 'noname'}</div>
                                 </div>
                             );
                         })}
