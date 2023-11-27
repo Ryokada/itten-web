@@ -19,6 +19,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import DeleteScheduleConfirm from '../DeleteScheduleConfirm';
 import HeloMemberForm from '../HelpMemberForm';
 import {
     ScheduleDoc,
@@ -31,7 +32,7 @@ import {
     HelpMember,
 } from '../schedule';
 import Dialog from '@/app/components/Dialog';
-import { SmallIcon } from '@/app/components/Icon';
+import { MemberIcon, SmallIcon } from '@/app/components/Icon';
 import Message from '@/app/components/Message';
 import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
 import Spinner from '@/app/components/Spinner';
@@ -87,6 +88,16 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
         setAddHelperDialogOpen(false);
     };
 
+    const [isDeleteialogOpen, setDeleteDialogOpen] = useState(false);
+
+    const handleOpenDeleteDialog = () => {
+        setDeleteDialogOpen(true);
+    };
+
+    const handleCloseDeleteDialog = () => {
+        setDeleteDialogOpen(false);
+    };
+
     const sendRemind = async () => {
         if (!scheduleDocRef || !noAnsweredMembers || noAnsweredMembers.length === 0) return;
 
@@ -122,8 +133,9 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 }
 
                 const updateTarget = sfDoc.data();
-                transaction.update(scheduleDocRef, { ...updateTarget, helpMembers: members });
-                setSchedule({ ...updateTarget, helpMembers: members });
+                const newData = { ...updateTarget, helpMembers: members };
+                transaction.update(scheduleDocRef, newData);
+                setSchedule(newData);
             });
             setMessage('助っ人を更新しました');
         } catch (e) {
@@ -131,6 +143,30 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
             setMessage('助っ人の更新に失敗しました');
         } finally {
             setAddHelperDialogOpen(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const deleteSchedule = async () => {
+        if (!scheduleDocRef) return;
+        try {
+            await runTransaction(db, async (transaction) => {
+                const sfDoc = await transaction.get(scheduleDocRef);
+                if (!sfDoc.exists()) {
+                    throw Error('対象のスケージュールが存在しません');
+                }
+
+                const updateTarget = sfDoc.data();
+                const newData = { ...updateTarget, isDeleted: true };
+                transaction.update(scheduleDocRef, newData);
+                setSchedule(newData);
+            });
+            setMessage('予定を削除しました');
+        } catch (e) {
+            console.error('予定の削除に失敗しました', e);
+            setMessage('予定の削除に失敗しました');
+        } finally {
+            setDeleteDialogOpen(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
@@ -342,6 +378,11 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 {message && (
                     <div className='mb-3'>
                         <Message message={message} />
+                    </div>
+                )}
+                {schedule.isDeleted && (
+                    <div className='w-full my-3 py-5 text-center font-bold rounded bg-red-400 p-1 border border-red-600'>
+                        このスケジュールは削除済みです
                     </div>
                 )}
                 <div className='flex'>
@@ -591,6 +632,20 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                                 />
                             </div>
                         </Dialog>
+                        <button
+                            className='block text-center mx-auto mt-5 w-2/3 p-2 bg-red-500 text-white rounded-md hover:bg-red-600'
+                            onClick={handleOpenDeleteDialog}
+                        >
+                            スケジュール削除
+                        </button>
+                        <Dialog isOpen={isDeleteialogOpen} onClose={handleCloseDeleteDialog}>
+                            <div>
+                                <DeleteScheduleConfirm
+                                    close={handleCloseAddHelperDialog}
+                                    onSubmit={deleteSchedule}
+                                />
+                            </div>
+                        </Dialog>
                     </>
                 )}
             </div>
@@ -619,12 +674,8 @@ const ScheduledMemberList = ({
                         {scheduledMembers.map((m, i) => {
                             return (
                                 <div key={`${m.id}`} className='mt-2 mr-3'>
-                                    {m.imageUrl ? (
-                                        <SmallIcon src={m.imageUrl} alt={m.name} />
-                                    ) : (
-                                        <div className='h-8 w-8 bg-gray-600 rounded-full'></div>
-                                    )}
-                                    <div className='text-sm'>{m.name ?? 'noname'}</div>
+                                    <MemberIcon id={m.id} imageUrl={m.imageUrl} name={m.name} />
+                                    <div className='text-sm w-max'>{m.name ?? 'noname'}</div>
                                 </div>
                             );
                         })}
