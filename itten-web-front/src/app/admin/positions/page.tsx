@@ -2,7 +2,7 @@
 
 import { CollectionReference, collection, getDocs, query } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { SmallIcon } from '@/app/components/Icon';
+import { MemberIcon, SmallIcon } from '@/app/components/Icon';
 import { Position, PostionLabel, positionsMaster } from '@/app/components/Postion';
 import { db } from '@/firebase/client';
 
@@ -96,19 +96,14 @@ const PositionComponent = ({
                 ) : (
                     desiredMembers.map((m) => {
                         return (
-                            <div key={m.id} className='flex items-center mr-2'>
-                                <div
-                                    key={`${position.name}_${m.id}}`}
-                                    className='flex flex-col justify-center items-center mt-2 mr-3'
-                                >
-                                    {m.imageUrl ? (
-                                        <SmallIcon src={m.imageUrl} alt={m.name} />
-                                    ) : (
-                                        <div className='h-8 w-8 bg-gray-600 rounded-full'></div>
-                                    )}
-                                    <div className='text-sm w-max'>
-                                        {m.name ?? 'noname'} {`(${m.rank})`}
-                                    </div>
+                            <div
+                                key={`${position.name}_${m.id}}`}
+                                className='flex flex-col justify-center items-center mt-2 mr-3'
+                            >
+                                <MemberIcon id={m.id} imageUrl={m.imageUrl} name={m.name} />
+                                <div className='flex items-end text-sm w-max'>
+                                    {m.name ?? 'noname'}
+                                    <div className='text-xs'>{`(${m.rank})`}</div>
                                 </div>
                             </div>
                         );
