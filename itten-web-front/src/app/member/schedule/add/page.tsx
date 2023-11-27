@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import ScheduleForm, { ScheduleTnput } from '../ScheduleForm';
 import { ScheduleDoc } from '../schedule';
-import Spinner from '@/app/components/Spinner';
+import Spinner, { SmallSpinner } from '@/app/components/Spinner';
 import { db, functions } from '@/firebase/client';
 
 const SHOULD_NOTIFY = process.env.NEXT_PUBLIC_SHOULD_NOTIFY === 'true';
@@ -65,10 +65,10 @@ const ScheduleAdd = () => {
                     submitoBtn={
                         <button
                             type='submit'
-                            className='w-1/2 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600'
+                            className='w-1/2 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 isabled:opacity-50 disabled:cursor-not-allowed'
                             disabled={disabled}
                         >
-                            作成
+                            {disabled ? <SmallSpinner color='border-white-900' /> : '作成'}
                         </button>
                     }
                 />
