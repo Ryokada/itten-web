@@ -451,7 +451,15 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                         ⚠️ 出欠未登録です ⚠️
                     </div>
                 )}
-                <div className='flex w-full space-x-3 mt-10 mb-3'>
+                <textarea
+                    className='mt-8 p-2 border rounded-md w-full text-xs'
+                    name='attendandeMemo'
+                    rows={2}
+                    value={attendanseMemo}
+                    placeholder='出欠に関しての補足を入力できます'
+                    onChange={(event) => setAttendanseMemo(event.target.value)}
+                />
+                <div className='flex w-full space-x-3 mb-3'>
                     <button
                         className='w-1/3 p-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-800 text-center cursor-pointer opacity-30 disabled:opacity-100 disabled:cursor-not-allowed'
                         onClick={() => regist('ok')}
@@ -474,14 +482,6 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                         欠席
                     </button>
                 </div>
-                <textarea
-                    className='mx-1 p-2 border rounded-md w-full text-sm'
-                    name='attendandeMemo'
-                    rows={3}
-                    value={attendanseMemo}
-                    placeholder='出欠に関しての補足を入力できます'
-                    onChange={(event) => setAttendanseMemo(event.target.value)}
-                />
 
                 <hr
                     className='h-px my-8
