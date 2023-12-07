@@ -10,12 +10,34 @@
 
 ### フロント
 
-* Nextjs 13
-* React 18
-* Taileind CSS 3
+* Nextjs 13 (AppRouter)
+  * React 18
+
+* Tailewind CSS 3
 * TypeScript
 
-### バックエンド
+### バックエンド/インフラ
 
-T.B.D
+* Firebase
+* Vercel
+* LINE Messaging API
+
+
+
+## 開発
+
+開発は `./itten-web-front`フォルダで行います。
+
+```
+npm i
+npm run dev
+```
+
+`http://localhost:3000/`でアクセスできます。
+
+
+
+
+
+
 
