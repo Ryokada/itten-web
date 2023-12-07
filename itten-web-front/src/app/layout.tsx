@@ -1,4 +1,5 @@
 import './globals.css';
+import { Analytics } from '@vercel/analytics/react';
 import type { Metadata } from 'next';
 import { Noto_Sans_JP } from 'next/font/google';
 import Header from './components/Header';
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <div id='top' className='h-px bg-slate-200'></div>
                     <div className='pt-16 bg-slate-200 min-h-screen'>{children}</div>
                 </SessionProvider>
+                <Analytics />
             </body>
         </html>
     );
