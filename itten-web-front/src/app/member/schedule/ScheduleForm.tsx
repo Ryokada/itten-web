@@ -101,16 +101,17 @@ const ScheduleForm = ({
     };
 
     useEffect(() => {
+        // 既存のスケジュールがある場合（スケジュール更新時）
         if (currentSchedule) {
             setValue('startTimestamp', currentSchedule.startTimestamp.toDate());
             setValue('endTimestamp', currentSchedule.endTimestamp.toDate());
+            return;
         }
+        
         // 新規スケジュール作成時に、開始時刻を現在時刻の分を切り捨てて(hh時00分に)設定
-        else {
-            const now = new Date();
-            now.setMinutes(0,0,0)
-            setValue('startTimestamp', now)
-        }
+        const now = new Date();
+        now.setMinutes(0,0,0)
+        setValue('startTimestamp', now)
     }, [currentSchedule, setValue]);
 
     /**
