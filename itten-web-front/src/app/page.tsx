@@ -1,5 +1,8 @@
 import Image from 'next/image';
 import AosLayout from './components/Aoslayout';
+import gloves from '@public/images/photos/gloves1.jpg';
+import meeting from '@public/images/photos/meeting.jpg';
+import score from '@public/images/photos/score.jpg';
 import uni from '@public/images/photos/uni.jpg';
 import skyPng from '@public/images/sky.png';
 import logo from '@public/itten-logo.png';
@@ -36,68 +39,101 @@ export default function Home() {
                     </div>
                     {/* ジグザグ */}
                     {/* ジグザグ1 */}
-                    <div className='flex flex-col lg:flex-row w-full items-center justify-center space-x-10 space-y-10 mb-12'>
-                        <div>
-                            <Image
-                                src={uni}
-                                objectFit={`cover`}
-                                alt='背景'
-                                data-aos='fade-right'
-                                className='rounded-xl object-cover h-40 w-80 lg:h-72 lg:w-96'
-                            />
+                    <div className='flex flex-col lg:flex-row w-full items-center justify-center space-y-10 lg:space-x-10 mb-14'>
+                        <div className='rounded-xl overflow-hidden' data-aos='fade-right'>
+                            <div className='transition-transform duration-300 ease-in-out hover:scale-125'>
+                                <Image
+                                    src={uni}
+                                    objectFit={`cover`}
+                                    alt='背景'
+                                    className='object-cover h-40 w-80 lg:h-72 lg:w-96'
+                                />
+                            </div>
                         </div>
-                        <div data-aos='fade-up'>
+                        <div className='lg:w-1/2' data-aos='fade-up'>
                             <h1 className='text-2xl font-bold mb-5 text-zinc-600'>一天について</h1>
                             <p>
-                                一天（いってん）は
+                                ▫︎設立　2020年4月
                                 <br />
-                                東京都世田谷区を中心に活動する
+                                ▫︎活動　毎週土曜午後中心に土日どちらか
                                 <br />
-                                草野球チームです
+                                ▫︎場所　東京・世田谷
+                                <br />
+                                ▫︎人数　23名(20代〜50代)
+                                <br />
+                                経験者(小〜高)&初心者ミックスで野球を楽しんでいます。
+                                <br />
+                                対戦申込はDMまでお願い致します！
+                                <br />
                             </p>
                         </div>
                     </div>
                     {/* ジグザグ2 */}
-                    <div className='flex flex-col lg:flex-row-reverse w-full items-center justify-center space-x-10 space-y-10 lg:space-x-reverse mb-12'>
-                        <div>
-                            <Image
-                                src={uni}
-                                objectFit={`cover`}
-                                alt='背景'
-                                data-aos='fade-left'
-                                className='rounded-xl object-cover h-40 w-80 lg:h-72 lg:w-96'
-                            />
+                    <div className='flex flex-col lg:flex-row-reverse w-full items-center justify-center space-y-10  lg:space-x-10 lg:space-x-reverse mb-14'>
+                        <div className='rounded-xl overflow-hidden' data-aos='fade-left'>
+                            <div className='transition-transform duration-300 ease-in-out hover:scale-125'>
+                                <Image
+                                    src={gloves}
+                                    objectFit={`cover`}
+                                    alt='背景'
+                                    className='object-cover h-40 w-80 lg:h-72 lg:w-96'
+                                />
+                            </div>
                         </div>
-                        <div data-aos='fade-up'>
-                            <h1 className='text-2xl font-bold mb-5 text-zinc-600'>一天について</h1>
+                        <div className='lg:w-1/2' data-aos='fade-up'>
+                            <h1 className='text-2xl font-bold mb-5 text-zinc-600'>Instagram</h1>
                             <p>
-                                一天（いってん）は
-                                <br />
-                                東京都世田谷区を中心に活動する
-                                <br />
-                                草野球チームです
+                                <a
+                                    href='https://www.instagram.com/itten2020/'
+                                    className='underline'
+                                >
+                                    {'インスタ'}
+                                </a>
+                                やってます
                             </p>
                         </div>
                     </div>
                     {/* ジグザグ3 */}
-                    <div className='flex flex-col lg:flex-row w-full items-center justify-center space-x-10 space-y-10 mb-12'>
-                        <div>
-                            <Image
-                                src={uni}
-                                objectFit={`cover`}
-                                alt='背景'
-                                data-aos='fade-right'
-                                className='rounded-xl object-cover h-40 w-80 lg:h-72 lg:w-96'
-                            />
+                    <div className='flex flex-col lg:flex-row w-full items-center justify-center space-y-10 lg:space-x-10 mb-14'>
+                        <div className='rounded-xl overflow-hidden' data-aos='fade-right'>
+                            <div className='transition-transform duration-300 ease-in-out hover:scale-125'>
+                                <Image
+                                    src={meeting}
+                                    objectFit={`cover`}
+                                    alt='背景'
+                                    className='object-cover h-40 w-80 lg:h-72 lg:w-96'
+                                />
+                            </div>
                         </div>
-                        <div data-aos='fade-up'>
-                            <h1 className='text-2xl font-bold mb-5 text-zinc-600'>一天について</h1>
+                        <div className='lg:w-1/2' data-aos='fade-up'>
+                            <h1 className='text-2xl font-bold mb-5 text-zinc-600'>公式戦</h1>
                             <p>
-                                一天（いってん）は
-                                <br />
-                                東京都世田谷区を中心に活動する
-                                <br />
-                                草野球チームです
+                                <a href='https://ts-league.com/team/itten/' className='underline'>
+                                    {'東京スカイツリーグ'}
+                                </a>
+                                に所属しています
+                            </p>
+                        </div>
+                    </div>
+                    {/* ジグザグ4 */}
+                    <div className='flex flex-col lg:flex-row-reverse w-full items-center justify-center space-y-10 lg:space-x-10 lg:space-x-reverse mb-14'>
+                        <div className='rounded-xl overflow-hidden' data-aos='fade-left'>
+                            <div className='transition-transform duration-300 ease-in-out hover:scale-125'>
+                                <Image
+                                    src={score}
+                                    objectFit={`cover`}
+                                    alt='背景'
+                                    className='object-cover h-40 w-80 lg:h-72 lg:w-96'
+                                />
+                            </div>
+                        </div>
+                        <div className='lg:w-1/2' data-aos='fade-up'>
+                            <h1 className='text-2xl font-bold mb-5 text-zinc-600'>戦績</h1>
+                            <p>
+                                <a href='https://teams.one/teams/itten/game' className='underline'>
+                                    {'Teams'}
+                                </a>
+                                で成績をまとめています
                             </p>
                         </div>
                     </div>
