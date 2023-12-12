@@ -12,7 +12,8 @@ type AosLayoutProps = {
 const AosLayout: FC<AosLayoutProps> = ({ children }) => {
     useEffect(() => {
         AOS.init({
-            duration: 600,
+            once: true,
+            duration: 1000,
             easing: 'ease-in-out-sine',
         });
     });
