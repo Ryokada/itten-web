@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
     title: '一天管理者',
     description: '一天管理者用のページです',
+    robots: { index: false, follow: false },
 };
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     return <AdminOnly>{children}</AdminOnly>;
