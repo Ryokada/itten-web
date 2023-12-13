@@ -13,7 +13,16 @@ const notoSansJp = Noto_Sans_JP({
 
 export const metadata: Metadata = {
     title: '一天',
-    description: '一天のサイトです',
+    description: '東京都世田谷区で活動する草野球チーム一天のサイトです。',
+    applicationName: '草野球チーム管理アプリ',
+    authors: {
+        name: 'Ryoya Okada',
+    },
+    generator: 'Next.js',
+    keywords: ['baseball', '草野球', '野球', '一天', '世田谷', '東京'],
+    themeColor: '#0355f9',
+    viewport: { width: 'device-width', initialScale: 1 },
+    robots: { index: true, follow: false },
 };
 
 /**
