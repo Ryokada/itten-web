@@ -189,6 +189,7 @@ export const getNoAnsweredMembers = (
 ): Array<Member> => {
     return allMembers.filter(
         (m) =>
+            !m.isSaspended &&
             !schedule.okMembers.some((ok) => m.id === ok.id) &&
             !schedule.ngMembers.some((ng) => m.id === ng.id) &&
             !schedule.holdMembers.some((hold) => m.id === hold.id),
