@@ -1,5 +1,7 @@
 import dayjs from 'dayjs';
 import ja from 'dayjs/locale/ja';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import Image from 'next/image';
 import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
 import Spinner from '@/app/components/Spinner';
@@ -8,7 +10,11 @@ import { dbAdmin } from '@/firebase/admin';
 import locationIcon from '@public/icons/location_on.svg';
 import clockIcon from '@public/icons/schedule.svg';
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
 dayjs.locale(ja);
+
+const STATIC_TIMEZONE = 'Asia/Tokyo';
 
 const OpenSchedule = async () => {
     const schedulesSnapshots = await dbAdmin
@@ -64,8 +70,8 @@ type ScheduleRowProps = {
     schedule: ScheduleDoc;
 };
 const ScheduleRow = ({ id, schedule }: ScheduleRowProps) => {
-    const startTsDayjs = dayjs(schedule.startTimestamp.toDate());
-    const endTsDayjs = dayjs(schedule.endTimestamp.toDate());
+    const startTsDayjs = dayjs(schedule.startTimestamp.toDate()).tz(STATIC_TIMEZONE);
+    const endTsDayjs = dayjs(schedule.endTimestamp.toDate()).tz(STATIC_TIMEZONE);
 
     return (
         <div className='border-b border-slate-300 py-2 px-2'>
