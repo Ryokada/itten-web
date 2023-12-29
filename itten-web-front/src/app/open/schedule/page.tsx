@@ -11,15 +11,18 @@ import clockIcon from '@public/icons/schedule.svg';
 dayjs.locale(ja);
 
 const OpenSchedule = async () => {
-    const schedulesSnapshots = await dbAdmin.collection('schedules')
+    const schedulesSnapshots = await dbAdmin
+        .collection('schedules')
         .where('startTimestamp', '>=', new Date())
         .orderBy('startTimestamp')
         .get();
 
-    const openSchedulesDocs = schedulesSnapshots.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data() as ScheduleDoc
-    }));
+    const openSchedulesDocs = schedulesSnapshots.docs
+        .map((doc) => ({
+            id: doc.id,
+            ...(doc.data() as ScheduleDoc),
+        }))
+        .filter((schedule) => !schedule.isDeleted && schedule.isOpened);
 
     if (!openSchedulesDocs) {
         return (
@@ -46,11 +49,7 @@ const OpenSchedule = async () => {
             <div className='max-w-xl w-full mx-auto'>
                 <div className='flex flex-col'>
                     {openSchedulesDocs.map((schedule) => (
-                        <ScheduleRow
-                            id={schedule.id}
-                            schedule={schedule}
-                            key={schedule.id}
-                        />
+                        <ScheduleRow id={schedule.id} schedule={schedule} key={schedule.id} />
                     ))}
                 </div>
             </div>
