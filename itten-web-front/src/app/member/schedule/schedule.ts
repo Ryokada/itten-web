@@ -99,6 +99,7 @@ export type ScheduledMember = {
     memo?: string;
     createdAt: Timestamp;
     updatedAt: Timestamp;
+    isSaspended?: boolean;
 };
 
 export type HelpMember = {

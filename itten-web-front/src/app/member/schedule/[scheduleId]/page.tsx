@@ -67,15 +67,24 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
     const [disabledRemaind, setDisabledRemaind] = useState(false);
     const [attendanseMemo, setAttendanseMemo] = useState<string>('');
 
-    const [isNotifyDialogOpen, setNotifyDialogOpen] = useState(false);
     const [additionalRemindMessage, setAdditionalRemindMessage] = useState('');
+    const [isNoAnswerNotifyDialogOpen, setNoAnswerNotifyDialogOpen] = useState(false);
 
     const handleOpenNotifyDialog = () => {
-        setNotifyDialogOpen(true);
+        setNoAnswerNotifyDialogOpen(true);
     };
 
     const handleCloseNotifyDialog = () => {
-        setNotifyDialogOpen(false);
+        setNoAnswerNotifyDialogOpen(false);
+    };
+    const [isHoldrNotifyDialogOpen, setHoldNotifyDialogOpen] = useState(false);
+
+    const handleOpenHoldNotifyDialog = () => {
+        setHoldNotifyDialogOpen(true);
+    };
+
+    const handleCloseHoldNotifyDialog = () => {
+        setHoldNotifyDialogOpen(false);
     };
 
     const [isAddHelperDialogOpen, setAddHelperDialogOpen] = useState(false);
@@ -98,8 +107,8 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
         setDeleteDialogOpen(false);
     };
 
-    const sendRemind = async () => {
-        if (!scheduleDocRef || !noAnsweredMembers || noAnsweredMembers.length === 0) return;
+    const sendRemind = async (toMembers: Array<ScheduledMember>) => {
+        if (!scheduleDocRef || !toMembers || toMembers.length === 0) return;
 
         setDisabledRemaind(true);
         try {
@@ -107,9 +116,10 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 functions,
                 'lineSendRemindInputSchedule',
             );
+            console.log(toMembers);
             await lineSendRemindInputSchedule({
                 scheduleId: scheduleDocRef.id,
-                toIds: noAnsweredMembers.filter((m) => m.lineId).map((m) => m.lineId),
+                toIds: toMembers.filter((m) => m.lineId && !m.isSaspended).map((m) => m.lineId),
                 additionalMessage: additionalRemindMessage ?? '',
             });
             setMessage('催促のLINEを送信しました');
@@ -117,7 +127,8 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
             console.error('LINE通知に失敗しました', e);
             setMessage('催促のLINEを送信に失敗しました');
         } finally {
-            setNotifyDialogOpen(false);
+            setNoAnswerNotifyDialogOpen(false);
+            setHoldNotifyDialogOpen(false);
             setDisabledRemaind(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -293,6 +304,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                                 updatedAt: dummyTimestamp,
                                 memo: '',
                                 lineId: m.lineId,
+                                isSaspended: m.isSaspended,
                             };
                         }),
                     );
@@ -358,6 +370,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                         updatedAt: dummyTimestamp,
                         memo: '',
                         lineId: m.lineId,
+                        isSaspended: m.isSaspended,
                     };
                 }),
             );
@@ -579,14 +592,76 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 {me?.role === 'admin' && (
                     <>
                         <button
-                            className='block text-center mx-auto mt-10 w-2/3 p-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600'
+                            className='block text-center mx-auto mt-5 w-2/3 p-2 bg-gray-500 text-white rounded-md hover:bg-gray-600'
+                            onClick={handleOpenAddHelperDialog}
+                        >
+                            助っ人編集
+                        </button>
+                        <Dialog isOpen={isAddHelperDialogOpen} onClose={handleCloseAddHelperDialog}>
+                            <div>
+                                <HeloMemberForm
+                                    close={() => handleCloseAddHelperDialog()}
+                                    onSubmit={updateHelpMembers}
+                                    members={schedule.helpMembers ?? []}
+                                />
+                            </div>
+                        </Dialog>
+                        <button
+                            className='block text-center mx-auto mt-10 w-2/3 p-2 bg-teal-500 text-white rounded-md hover:bg-teal-600'
+                            onClick={handleOpenHoldNotifyDialog}
+                        >
+                            保留メンバーに催促
+                        </button>
+                        <Dialog
+                            isOpen={isHoldrNotifyDialogOpen}
+                            onClose={handleOpenHoldNotifyDialog}
+                        >
+                            <div>
+                                <h1 className='mb-2 text-lg'>催促LINEを送ります</h1>
+                                <h2 className='text-sm'>追加メッセージ（省略可）</h2>
+                                <textarea
+                                    className='border rounded-md w-full mb-2 p-2 text-sm'
+                                    value={additionalRemindMessage}
+                                    onChange={(e) => setAdditionalRemindMessage(e.target.value)}
+                                ></textarea>
+                                <div className='mb-5'>
+                                    <ScheduledMemberList
+                                        title='未登録メンバー'
+                                        scheduledMembers={schedule.holdMembers}
+                                    />
+                                </div>
+
+                                <div className='flex w-full space-x-3'>
+                                    <button
+                                        onClick={handleCloseHoldNotifyDialog}
+                                        className='w-1/2 p-2 bg-gray-400 text-white rounded-md hover:bg-gray-600'
+                                    >
+                                        閉じる
+                                    </button>
+                                    <button
+                                        onClick={() => sendRemind(schedule.holdMembers)}
+                                        className='w-1/2 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed'
+                                        disabled={disabledRemaind}
+                                    >
+                                        送信
+                                    </button>
+                                </div>
+                            </div>
+                        </Dialog>
+                        <button
+                            className='block text-center mx-auto mt-5 w-2/3 p-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600'
                             onClick={handleOpenNotifyDialog}
                         >
                             未回答メンバーに催促
                         </button>
-                        <Dialog isOpen={isNotifyDialogOpen} onClose={handleCloseNotifyDialog}>
+                        <Dialog
+                            isOpen={isNoAnswerNotifyDialogOpen}
+                            onClose={handleCloseNotifyDialog}
+                        >
                             <div>
-                                <h1 className='mb-2 text-lg'>催促LINEを送ります</h1>
+                                <h1 className='mb-2 text-lg'>
+                                    催促LINEを送ります※休部中のメンバーには送りません
+                                </h1>
                                 <h2 className='text-sm'>追加メッセージ（省略可）</h2>
                                 <textarea
                                     className='border rounded-md w-full mb-2 p-2 text-sm'
@@ -608,7 +683,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                                         閉じる
                                     </button>
                                     <button
-                                        onClick={sendRemind}
+                                        onClick={() => sendRemind(noAnsweredMembers)}
                                         className='w-1/2 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed'
                                         disabled={disabledRemaind}
                                     >
@@ -618,22 +693,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                             </div>
                         </Dialog>
                         <button
-                            className='block text-center mx-auto mt-5 w-2/3 p-2 bg-gray-500 text-white rounded-md hover:bg-gray-600'
-                            onClick={handleOpenAddHelperDialog}
-                        >
-                            助っ人編集
-                        </button>
-                        <Dialog isOpen={isAddHelperDialogOpen} onClose={handleCloseAddHelperDialog}>
-                            <div>
-                                <HeloMemberForm
-                                    close={() => handleCloseAddHelperDialog()}
-                                    onSubmit={updateHelpMembers}
-                                    members={schedule.helpMembers ?? []}
-                                />
-                            </div>
-                        </Dialog>
-                        <button
-                            className='block text-center mx-auto mt-5 w-2/3 p-2 bg-red-500 text-white rounded-md hover:bg-red-600'
+                            className='block text-center mx-auto mt-10 w-2/3 p-2 bg-red-500 text-white rounded-md hover:bg-red-600'
                             onClick={handleOpenDeleteDialog}
                         >
                             スケジュール削除
