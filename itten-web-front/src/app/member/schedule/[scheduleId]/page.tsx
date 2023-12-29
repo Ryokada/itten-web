@@ -116,9 +116,10 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                 functions,
                 'lineSendRemindInputSchedule',
             );
+            console.log(toMembers);
             await lineSendRemindInputSchedule({
                 scheduleId: scheduleDocRef.id,
-                toIds: toMembers.filter((m) => m.lineId).map((m) => m.lineId),
+                toIds: toMembers.filter((m) => m.lineId && !m.isSaspended).map((m) => m.lineId),
                 additionalMessage: additionalRemindMessage ?? '',
             });
             setMessage('催促のLINEを送信しました');
@@ -303,6 +304,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                                 updatedAt: dummyTimestamp,
                                 memo: '',
                                 lineId: m.lineId,
+                                isSaspended: m.isSaspended,
                             };
                         }),
                     );
@@ -368,6 +370,7 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                         updatedAt: dummyTimestamp,
                         memo: '',
                         lineId: m.lineId,
+                        isSaspended: m.isSaspended,
                     };
                 }),
             );
@@ -656,7 +659,9 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                             onClose={handleCloseNotifyDialog}
                         >
                             <div>
-                                <h1 className='mb-2 text-lg'>催促LINEを送ります</h1>
+                                <h1 className='mb-2 text-lg'>
+                                    催促LINEを送ります※休部中のメンバーには送りません
+                                </h1>
                                 <h2 className='text-sm'>追加メッセージ（省略可）</h2>
                                 <textarea
                                     className='border rounded-md w-full mb-2 p-2 text-sm'
