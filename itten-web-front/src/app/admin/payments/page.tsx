@@ -1,11 +1,13 @@
 'use client';
 
 import { CollectionReference, collection, getDoc, getDocs, query } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
 import { useForm, SubmitHandler, useWatch, Controller } from 'react-hook-form';
 import { PaymentInput } from './types/paymentInput';
-import { db } from '@/firebase/client';
+import { SmallSpinner } from '@/app/components/Spinner';
+import { db, functions } from '@/firebase/client';
 
 const AddPaymentsPage = () => {
     return (
@@ -19,8 +21,10 @@ const AddPaymentsPage = () => {
 };
 
 const PaymentForm = () => {
+    const [disabled, setDisabled] = useState(false);
     const { data: session } = useSession();
     const [allMembers, setAllMembers] = useState<Member[]>([]);
+    const [me, setMe] = useState<Member>();
 
     const {
         register,
@@ -39,8 +43,21 @@ const PaymentForm = () => {
         },
     });
     const onSubmit: SubmitHandler<PaymentInput> = async (data) => {
-        // ここに送信ロジックを実装
-        console.log(data);
+        setDisabled(true);
+        try {
+            console.log(data);
+
+            const updateData = {
+                ...data,
+                paidDate: formatDate(data.paidDate),
+            };
+
+            const addPayment = httpsCallable(functions, 'accounting-addPayment');
+            await addPayment(updateData);
+            console.log('精算を追加しました。', updateData);
+        } finally {
+            setDisabled(false);
+        }
     };
 
     const watchPaid = useWatch({
@@ -57,18 +74,23 @@ const PaymentForm = () => {
 
     useEffect(() => {
         if (!session) return;
-        // TODO 共通化
         const membersQuery = query(collection(db, 'members')) as CollectionReference<Member>;
 
         (async () => {
             const membersDocs = await getDocs(membersQuery);
             const newMembers: Array<Member> = [];
             membersDocs.forEach((d) => {
-                newMembers.push({ ...d.data(), id: d.id });
+                const dd = d.data();
+                newMembers.push({ ...dd, id: d.id });
+                // 自分だったら自分にも入れとく
+                if (d.id === session.user.uid) {
+                    setMe(dd);
+                    setValue('paidMenberName', dd.name);
+                }
             });
             setAllMembers(newMembers);
         })();
-    }, [session]);
+    }, [session, setValue]);
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className='p-4 space-y-4 bg-gray-100'>
@@ -98,11 +120,19 @@ const PaymentForm = () => {
                 <label htmlFor='paidDate' className='mb-2 font-semibold text-gray-600'>
                     日付 (YYYY/MM/DD):
                 </label>
-                <input
-                    id='paidDate'
-                    type='text'
-                    {...register('paidDate', { required: '日付は必須です' })}
-                    className='p-2 border rounded-md'
+                <Controller
+                    name='paidDate'
+                    control={control}
+                    rules={{ required: '日付は必須です' }}
+                    render={({ field }) => (
+                        <input
+                            type='date'
+                            min='2023-04-01'
+                            value={field.value ?? ''}
+                            onChange={(e) => setValue('paidDate', e.target.value ?? '')}
+                            className='p-2 border rounded-md'
+                        />
+                    )}
                 />
                 {errors.paidDate && (
                     <p className='text-red-500 text-xs'>{errors.paidDate.message}</p>
@@ -129,7 +159,11 @@ const PaymentForm = () => {
                 <label htmlFor='description' className='mb-2 font-semibold text-gray-600'>
                     内容:
                 </label>
-                <textarea id='description' {...register('description')} />
+                <textarea
+                    id='description'
+                    {...register('description')}
+                    className='p-2 border rounded-md'
+                />
             </div>
             <div className='flex flex-col'>
                 <label
@@ -143,6 +177,7 @@ const PaymentForm = () => {
                     type='number'
                     min='0'
                     {...register('participationFeeIncome', {
+                        valueAsNumber: true,
                         min: { value: 0, message: '0以上の値を入力してください' },
                     })}
                     className='p-2 border rounded-md'
@@ -161,6 +196,7 @@ const PaymentForm = () => {
                     type='number'
                     min='0'
                     {...register('fromVsTeamIncome', {
+                        valueAsNumber: true,
                         min: { value: 0, message: '0以上の値を入力してください' },
                     })}
                     className='p-2 border rounded-md'
@@ -179,6 +215,7 @@ const PaymentForm = () => {
                     type='number'
                     min='0'
                     {...register('otherIncome', {
+                        valueAsNumber: true,
                         min: { value: 0, message: '0以上の値を入力してください' },
                     })}
                     className='p-2 border rounded-md'
@@ -197,6 +234,7 @@ const PaymentForm = () => {
                     type='number'
                     min='0'
                     {...register('groundFeeExpenses', {
+                        valueAsNumber: true,
                         min: { value: 0, message: '0以上の値を入力してください' },
                     })}
                     className='p-2 border rounded-md'
@@ -215,6 +253,7 @@ const PaymentForm = () => {
                     type='number'
                     min='0'
                     {...register('umpirFeeExpenses', {
+                        valueAsNumber: true,
                         min: { value: 0, message: '0以上の値を入力してください' },
                     })}
                     className='p-2 border rounded-md'
@@ -233,6 +272,7 @@ const PaymentForm = () => {
                     type='number'
                     min='0'
                     {...register('otherExpenses', {
+                        valueAsNumber: true,
                         min: { value: 0, message: '0以上の値を入力してください' },
                     })}
                     className='p-2 border rounded-md'
@@ -246,7 +286,7 @@ const PaymentForm = () => {
                 <label htmlFor='remarks' className='mb-2 font-semibold text-gray-600'>
                     備考:
                 </label>
-                <textarea id='remarks' {...register('remarks')} />
+                <textarea id='remarks' {...register('remarks')} className='p-2 border rounded-md' />
             </div>
 
             <div className='flex flex-col'>
@@ -254,25 +294,16 @@ const PaymentForm = () => {
                     建て替えた人:
                 </label>
                 <select
-                    id='typpaidMenberNamee'
+                    id='paidMenberName'
                     {...register('paidMenberName', { required: '建て替えた人は必須です' })}
                     className='p-2 border rounded-md'
+                    value={me?.name}
                 >
-                    {allMembers.map((member) => {
-                        if (member.id === session?.user.uid) {
-                            return (
-                                <option key={member.id} value={member.name} selected>
-                                    {member.name}
-                                </option>
-                            );
-                        }
-
-                        return (
-                            <option key={member.id} value={member.name}>
-                                {member.name}
-                            </option>
-                        );
-                    })}
+                    {allMembers.map((member) => (
+                        <option key={member.id} value={member.name}>
+                            {member.name}
+                        </option>
+                    ))}
                 </select>
                 {errors.paidMenberName && (
                     <p className='text-red-500 text-xs'>{errors.paidMenberName.message}</p>
@@ -281,12 +312,17 @@ const PaymentForm = () => {
 
             <button
                 type='submit'
-                className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+                className='mt-10 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+                disabled={disabled}
             >
-                送信
+                {disabled ? <SmallSpinner color='border-white-900' /> : '登録'}
             </button>
         </form>
     );
+};
+
+const formatDate = (value: string) => {
+    return value.split('-').join('/');
 };
 
 export default AddPaymentsPage;
