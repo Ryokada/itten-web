@@ -127,9 +127,10 @@ const MypageEdit = () => {
                             className='block text-gray-700 text-sm font-bold mb-2'
                             htmlFor='name'
                         >
-                            名前
+                            名前(現在変更不可です)
                         </label>
                         <input
+                            readOnly
                             type='text'
                             defaultValue={member?.name}
                             className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'

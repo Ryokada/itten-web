@@ -3,7 +3,8 @@ import Link from 'next/link';
 const AdminTop = () => {
     const links = [
         { label: '管理トップ', href: '/admin' },
-        { label: '希望ポジション一覧', href: '/admin/positions' },
+        { label: 'メンバー希望ポジション一覧 >', href: '/admin/positions' },
+        { label: '精算 >', href: '/admin/payments' },
     ];
     return (
         <main className='flex flex-col items-center min-h-screen py-5 px-10'>
