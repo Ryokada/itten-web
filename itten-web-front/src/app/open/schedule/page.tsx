@@ -16,6 +16,8 @@ dayjs.locale(ja);
 
 const STATIC_TIMEZONE = 'Asia/Tokyo';
 
+export const revalidate = 60 * 60 * 1; // 1時間
+
 const OpenSchedule = async () => {
     const schedulesSnapshots = await dbAdmin
         .collection('schedules')
