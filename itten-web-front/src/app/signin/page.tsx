@@ -1,10 +1,10 @@
 'use client';
 
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useSearchParams } from 'next/navigation';
-import { signIn as signInByNextAuth } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { signIn as signInByNextAuth, useSession } from 'next-auth/react';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Message from '../components/Message';
 import { auth } from '@/firebase/client';
 
@@ -12,10 +12,12 @@ import { auth } from '@/firebase/client';
  * サインイン画面
  */
 const SingIn = () => {
+    const session = useSession();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [disabled, setDisabled] = useState(false);
     const [message, setMessage] = useState<string>('');
+    const router = useRouter();
 
     const searchParams = useSearchParams();
 
@@ -44,6 +46,14 @@ const SingIn = () => {
             setDisabled(false);
         }
     };
+
+    useEffect(() => {
+        if (!session) return;
+        if (session?.status === 'authenticated' && session?.data.user.emailVerified) {
+            const fromPatn = searchParams.get('from');
+            router.push(fromPatn ?? '/member/mypage');
+        }
+    }, [session]);
 
     return (
         <main className='flex min-h-screen flex-col items-center'>
