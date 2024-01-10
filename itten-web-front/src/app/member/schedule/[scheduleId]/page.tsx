@@ -626,8 +626,10 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                                 ></textarea>
                                 <div className='mb-5'>
                                     <ScheduledMemberList
-                                        title='未登録メンバー'
-                                        scheduledMembers={schedule.holdMembers}
+                                        title='保留メンバー'
+                                        scheduledMembers={schedule.holdMembers.filter(
+                                            (m) => !m.isSaspended,
+                                        )}
                                     />
                                 </div>
 
@@ -671,7 +673,9 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                                 <div className='mb-5'>
                                     <ScheduledMemberList
                                         title='未登録メンバー'
-                                        scheduledMembers={noAnsweredMembers}
+                                        scheduledMembers={noAnsweredMembers.filter(
+                                            (m) => !m.isSaspended,
+                                        )}
                                     />
                                 </div>
 
