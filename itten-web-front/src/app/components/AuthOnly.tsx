@@ -2,12 +2,10 @@
 
 import { onAuthStateChanged } from 'firebase/auth';
 import { useRouter, usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut as signOutByNextAuth } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
 import Spinner from './Spinner';
 import { auth } from '@/firebase/client';
-
-import { signOut as signOutByNextAuth } from 'next-auth/react';
 
 /**
  * ラップしたコンポーネントを認証済みユーザーのみ表示可能にするコンポーネント
