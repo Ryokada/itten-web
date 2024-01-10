@@ -20,9 +20,7 @@ const AuthOnly = ({ children }: { children: React.ReactNode }) => {
     const [authenticated, setAuthenticated] = useState(false);
 
     useEffect(() => {
-        if (pathname != '/signin' && session?.status === 'unauthenticated') {
-            router.push('/signin?from=' + pathname);
-        }
+        if (session?.status === 'loading') return;
         if (
             pathname != '/signin' &&
             session?.status === 'authenticated' &&
@@ -42,14 +40,21 @@ const AuthOnly = ({ children }: { children: React.ReactNode }) => {
                 }
             });
         }
+
+        if (pathname != '/signin' && session?.status === 'unauthenticated') {
+            console.log('AuthOnly 1', session);
+            router.push('/signin?from=' + pathname);
+        }
     }, [router, pathname, session, session.status]);
 
     if (authenticated) {
         return <>{children}</>;
     } else {
-        <div className='flex flex-col items-center min-h-screen p-24'>
-            <Spinner />
-        </div>;
+        return (
+            <div className='flex flex-col items-center min-h-screen p-24'>
+                <Spinner />
+            </div>
+        );
     }
 };
 
