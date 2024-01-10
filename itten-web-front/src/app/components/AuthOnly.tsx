@@ -7,6 +7,8 @@ import React, { useEffect, useState } from 'react';
 import Spinner from './Spinner';
 import { auth } from '@/firebase/client';
 
+import { signOut as signOutByNextAuth } from 'next-auth/react';
+
 /**
  * ラップしたコンポーネントを認証済みユーザーのみ表示可能にするコンポーネント
  *
@@ -20,6 +22,9 @@ const AuthOnly = ({ children }: { children: React.ReactNode }) => {
     const [authenticated, setAuthenticated] = useState(false);
 
     useEffect(() => {
+        if (!session) {
+            return;
+        }
         if (session?.status === 'loading') return;
         if (
             pathname != '/signin' &&
@@ -36,16 +41,17 @@ const AuthOnly = ({ children }: { children: React.ReactNode }) => {
                     setAuthenticated(true);
                 } else {
                     setAuthenticated(false);
-                    router.push('/signin?from=' + pathname);
+                    signOutByNextAuth({ redirect: true, callbackUrl: '/' }).finally(() =>
+                        router.push('/signin'),
+                    );
                 }
             });
         }
 
         if (pathname != '/signin' && session?.status === 'unauthenticated') {
-            console.log('AuthOnly 1', session);
             router.push('/signin?from=' + pathname);
         }
-    }, [router, pathname, session, session.status]);
+    }, [router, pathname, session]);
 
     if (authenticated) {
         return <>{children}</>;

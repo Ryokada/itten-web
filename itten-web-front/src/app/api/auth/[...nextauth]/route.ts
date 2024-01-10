@@ -17,7 +17,6 @@ export const authOptions: NextAuthOptions = {
                 if (credentials?.idToken) {
                     try {
                         const decoded = await authAdmin.verifyIdToken(credentials?.idToken);
-                        // console.log('authorize', decoded);
                         const memberCollection = dbAdmin.collection(
                             'members',
                         ) as CollectionReference<Member>;
@@ -48,7 +47,6 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async jwt({ token, user, session }) {
-            // console.log('jwt', token, user, session);
             if (session?.user) {
                 token.name = session.user.name;
                 token.picture = session.user.image;
@@ -66,7 +64,6 @@ export const authOptions: NextAuthOptions = {
         },
         // sessionにJWTトークンからのユーザ情報を格納
         async session({ session, token }) {
-            // console.log('callback session', session, token);
             session.user.emailVerified = token.emailVerified;
             session.user.uid = token.uid ?? token.sub;
             session.user.sessionStateId = token.sessionStateId;
