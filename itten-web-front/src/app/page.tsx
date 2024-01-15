@@ -76,7 +76,7 @@ export default function Home() {
                                     <br />
                                     未経験者から経験者まで幅広く在籍しています。
                                     <br />
-                                    対戦申込はインスタDMまでお願い致します。
+                                    対戦申込等は下部お問い合わせまでお願い致します。
                                     <br />
                                 </p>
                             </div>
@@ -175,6 +175,18 @@ export default function Home() {
                             </div>
                         </div>
                     </div>
+                </div>
+                <div className='py-24 px-10 z-10 w-full bg-black bg-opacity-50'>
+                    <a href='https://labola.jp/team/AY0Ku2qQje-Ra9RaODmj'>
+                        <div className='rounded-lg bg-white w-full lg:w-max px-10 py-5 cursor-pointer mx-auto hover:bg-opacity-80'>
+                            <p className='text-indigo-900 font-bold text-2xl mb-2'>Contact</p>
+                            <p>練習試合、体験入部希望などご連絡はこちらから(LaBOLA)</p>
+                        </div>
+                    </a>
+                </div>
+                <div className='z-10 w-full px-5 pb-10'>
+                    <hr className='h-px mt-24 mb-5 bg-zinc-600 border-0 dark:bg-gray-700' />
+                    <p className='text-zinc-600 text-center w-full'>&copy; 一天</p>
                 </div>
 
                 <div className={`fixed top-0 left-0 w-full h-screen`}>

@@ -36,7 +36,7 @@ export default function Header() {
 
     return (
         <header>
-            <div className='fixed top-0 left-0 flex w-full bg-white px-6 z-20 h-16 shadow-md items-center justify-between'>
+            <div className='fixed top-0 left-0 flex w-full bg-white bg-opacity-90 px-6 z-20 h-16 shadow-md items-center justify-between'>
                 <Link href='/'>
                     <Image src={logo} alt='一天' className='h-10 w-10' />
                 </Link>
