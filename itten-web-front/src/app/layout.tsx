@@ -23,6 +23,7 @@ export const metadata: Metadata = {
     themeColor: '#0355f9',
     viewport: { width: 'device-width', initialScale: 1 },
     robots: { index: true, follow: false },
+    verification: { google: 'UMmLShdWeB3lIyLJtA6aVYfm4IVdr05YMgs_AeM9OEw' },
 };
 
 /**
