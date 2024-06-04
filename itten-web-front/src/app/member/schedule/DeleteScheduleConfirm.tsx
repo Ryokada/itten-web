@@ -1,7 +1,7 @@
 'use client';
 
 import { FC, useState } from 'react';
-import { HelpMember } from './schedule';
+import { HelpMember } from '../../components/Schedules/schedule';
 
 type DeleteScheduleConfirmProps = {
     close: () => void;

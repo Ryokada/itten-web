@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import Link from 'next/link';
 import { ReactNode, useEffect } from 'react';
 import { useForm, useWatch, Controller } from 'react-hook-form';
-import { ScheduleDoc } from './schedule';
+import { ScheduleDoc } from '../../components/Schedules/schedule';
 import scheduleTypes from './scheduleTypes';
 
 export type ScheduleTnput = {
@@ -104,8 +104,8 @@ const ScheduleForm = ({
         // 新規スケジュール作成時に、開始時刻を現在時刻の分を切り捨てて(hh時00分に)設定
         if (!currentSchedule) {
             const now = new Date();
-            now.setMinutes(0,0,0)
-            setValue('startTimestamp', now)
+            now.setMinutes(0, 0, 0);
+            setValue('startTimestamp', now);
             return;
         }
 
