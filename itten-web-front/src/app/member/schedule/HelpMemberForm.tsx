@@ -1,7 +1,7 @@
 'use client';
 
 import { FC, useState } from 'react';
-import { HelpMember } from './schedule';
+import { HelpMember } from '../../components/Schedules/schedule';
 
 type HelpMemberFormProps = {
     close: () => void;
@@ -55,18 +55,18 @@ const HeloMemberForm: FC<HelpMemberFormProps> = ({ close, onSubmit, members }) =
     return (
         <div>
             <h1 className='mb-2 text-lg'>助っ人メンバー編集</h1>
-            <div className='mx-2 my-2 '>
+            <div className='mx-2 my-2 w-full'>
                 {formMembers.map((member) => (
                     <div key={member.id} className='mb-1'>
                         <input
-                            className='p-2 border rounded-md mr-1'
+                            className='p-2 border rounded-md mr-1 max-w-full'
                             type='text'
                             placeholder='名前'
                             value={member.name}
                             onChange={(e) => updateMember(member.id, 'name', e.target.value)}
                         />
                         <input
-                            className='p-2 border rounded-md mr-2'
+                            className='p-2 border rounded-md mr-2 max-w-full'
                             type='text'
                             placeholder='メモ'
                             value={member.memo}

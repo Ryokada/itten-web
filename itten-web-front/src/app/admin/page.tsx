@@ -5,6 +5,7 @@ const AdminTop = () => {
         { label: '管理トップ', href: '/admin' },
         { label: 'メンバー希望ポジション一覧 >', href: '/admin/positions' },
         { label: '精算 >', href: '/admin/payments' },
+        { label: '全スケジュール >', href: '/admin/schedules' },
     ];
     return (
         <main className='flex flex-col items-center min-h-screen py-5 px-10'>

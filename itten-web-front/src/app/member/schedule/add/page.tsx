@@ -4,8 +4,8 @@ import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
+import { ScheduleDoc } from '../../../components/Schedules/schedule';
 import ScheduleForm, { ScheduleTnput } from '../ScheduleForm';
-import { ScheduleDoc } from '../schedule';
 import Spinner, { SmallSpinner } from '@/app/components/Spinner';
 import { db, functions } from '@/firebase/client';
 

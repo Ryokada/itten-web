@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import ScheduleList from '@/app/components/Schedules/ScheduleList';
 import ScheduleTypeLabel from '@/app/components/Schedules/ScheduleTypeLabel';
@@ -24,19 +25,22 @@ import clockIcon from '@public/icons/schedule.svg';
 
 dayjs.locale(ja);
 
-const Schedule = () => {
+const AdminSchedule = () => {
     const [schedulesDocs, setSchedulesDocs] = useState<QueryDocumentSnapshot<ScheduleDoc>[]>();
 
     useEffect(() => {
+        const now = new Date();
+        const nowYear1_1 = new Date(now.getFullYear(), 0, 1);
+
         const q = query(
             collection(db, 'schedules'),
-            where('startTimestamp', '>=', new Date()),
-            orderBy('startTimestamp'),
+            where('startTimestamp', '>=', nowYear1_1),
+            orderBy('startTimestamp', 'desc'),
         );
         (async () => {
             const schedulesSnapshots = await getDocs(q);
             const sDocs = schedulesSnapshots.docs as QueryDocumentSnapshot<ScheduleDoc>[];
-            setSchedulesDocs(sDocs.filter((s) => !s.data().isDeleted));
+            setSchedulesDocs(sDocs);
         })();
     }, []);
 
@@ -69,7 +73,7 @@ const Schedule = () => {
     );
 };
 
-export default Schedule;
+export default AdminSchedule;
 
 type ScheduleRowProps = {
     meId: string;
