@@ -6,8 +6,8 @@ import { PageNotFoundError } from 'next/dist/shared/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { ScheduleDoc } from '../../../../components/Schedules/schedule';
 import ScheduleForm, { ScheduleTnput } from '../../ScheduleForm';
-import { ScheduleDoc } from '../../schedule';
 import Spinner from '@/app/components/Spinner';
 import { db, functions } from '@/firebase/client';
 

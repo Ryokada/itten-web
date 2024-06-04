@@ -19,8 +19,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import DeleteScheduleConfirm from '../DeleteScheduleConfirm';
-import HeloMemberForm from '../HelpMemberForm';
 import {
     ScheduleDoc,
     comparAscScheduledMemberCreatedAt,
@@ -30,11 +28,13 @@ import {
     getNoAnsweredMembers,
     canEditSchedule,
     HelpMember,
-} from '../schedule';
+} from '../../../components/Schedules/schedule';
+import DeleteScheduleConfirm from '../DeleteScheduleConfirm';
+import HeloMemberForm from '../HelpMemberForm';
 import Dialog from '@/app/components/Dialog';
 import { MemberIcon, SmallIcon } from '@/app/components/Icon';
 import Message from '@/app/components/Message';
-import ScheduleTypeLabel from '@/app/components/ScheduleTypeLabel';
+import ScheduleTypeLabel from '@/app/components/Schedules/ScheduleTypeLabel';
 import Spinner from '@/app/components/Spinner';
 import { ICAL_TIMESTAMP_FORMAT } from '@/app/utiles/calenderFormats';
 import { db, functions } from '@/firebase/client';
@@ -508,21 +508,21 @@ const ScheduleView = ({ params }: ScheduleViewProps) => {
                             title='出席メンバー'
                             scheduledMembers={schedule.okMembers}
                         />
-                        <div className='mt-2'>
-                            <div className='flex text-sm text-gray-600'>
+                        <div className='mt-2 text-sm'>
+                            <div className='flex text-gray-600'>
                                 <p>助っ人</p>
                                 <p>{`(${schedule.helpMembers?.length ?? 0})`}</p>
                             </div>
                             {schedule.helpMembers && schedule.helpMembers.length > 0 && (
-                                <div className='flex space-x-3'>
+                                <div className='flex flex-col space-y-1 text-xs'>
                                     {schedule.helpMembers.map((m) => {
                                         return (
                                             <div
                                                 key={`helper${m.name}`}
-                                                className='flex space-x-0.5'
+                                                className='flex space-x-0.5 max-w-full'
                                             >
                                                 <p>{m.name}</p>
-                                                <p>{`(${m.memo ?? ''})`}</p>
+                                                {m.memo && <p>{`(${m.memo})`}</p>}
                                             </div>
                                         );
                                     })}

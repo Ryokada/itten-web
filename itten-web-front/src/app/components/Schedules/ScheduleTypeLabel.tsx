@@ -1,4 +1,4 @@
-import scheduleTypes from '../member/schedule/scheduleTypes';
+import scheduleTypes from '../../member/schedule/scheduleTypes';
 
 type ScheduleTypeLabelProps = {
     /**

@@ -2,74 +2,40 @@
 
 import dayjs from 'dayjs';
 import ja from 'dayjs/locale/ja';
-import {
-    collection,
-    query,
-    where,
-    getDocs,
-    orderBy,
-    QueryDocumentSnapshot,
-} from 'firebase/firestore';
+import { QueryDocumentSnapshot } from 'firebase/firestore';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import ScheduleList from '@/app/components/Schedules/ScheduleList';
+import { useSession } from 'next-auth/react';
 import ScheduleTypeLabel from '@/app/components/Schedules/ScheduleTypeLabel';
 import { ScheduleDoc, getScheduleState } from '@/app/components/Schedules/schedule';
-import Spinner from '@/app/components/Spinner';
-import { db } from '@/firebase/client';
 import locationIcon from '@public/icons/location_on.svg';
 import peoplesIcon from '@public/icons/peoples.svg';
 import clockIcon from '@public/icons/schedule.svg';
 
 dayjs.locale(ja);
 
-const Schedule = () => {
-    const [schedulesDocs, setSchedulesDocs] = useState<QueryDocumentSnapshot<ScheduleDoc>[]>();
+type ScheduleListProps = {
+    schedulesDocs: QueryDocumentSnapshot<ScheduleDoc>[];
+};
 
-    useEffect(() => {
-        const q = query(
-            collection(db, 'schedules'),
-            where('startTimestamp', '>=', new Date()),
-            orderBy('startTimestamp'),
-        );
-        (async () => {
-            const schedulesSnapshots = await getDocs(q);
-            const sDocs = schedulesSnapshots.docs as QueryDocumentSnapshot<ScheduleDoc>[];
-            setSchedulesDocs(sDocs.filter((s) => !s.data().isDeleted));
-        })();
-    }, []);
-
-    if (!schedulesDocs) {
-        return (
-            <main className='flex flex-col items-center min-h-screen p-24'>
-                <Spinner />
-            </main>
-        );
-    }
-
-    if (schedulesDocs.length === 0) {
-        return (
-            <main className='flex flex-col items-center min-h-screen py-5 px-10'>
-                <div className='max-w-xl w-full space-y-5'>
-                    <div className='text-center'>
-                        <p className='text-xl'>スケジュールはありません</p>
-                    </div>
-                </div>
-            </main>
-        );
-    }
+const ScheduleList: React.FC<ScheduleListProps> = ({ schedulesDocs }) => {
+    const { data: session } = useSession();
 
     return (
-        <main className='min-h-screen py-5 px-10'>
-            <div className='max-w-xl w-full mx-auto'>
-                <ScheduleList schedulesDocs={schedulesDocs} />
-            </div>
-        </main>
+        <div className='flex flex-col'>
+            {schedulesDocs.map((s) => (
+                <ScheduleRow
+                    meId={session?.user.uid || ''}
+                    id={s.id}
+                    schedule={s.data()}
+                    key={s.id}
+                />
+            ))}
+        </div>
     );
 };
 
-export default Schedule;
+export default ScheduleList;
 
 type ScheduleRowProps = {
     meId: string;
