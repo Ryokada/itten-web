@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import logo from '../../../public/itten-logo.png';
 import HambugerMenu from '@/app/components/HamburgerMenu';
@@ -28,6 +29,9 @@ const menuLinksForGuest = [
 export default function Header() {
     const [isDesktop] = useIsDesktop();
     const { data: session } = useSession();
+    const pathname = usePathname();
+
+    const isAdminPage = pathname.startsWith('/admin');
 
     let menuLinks = menuLinksForGuest;
     if (session) {
@@ -36,10 +40,17 @@ export default function Header() {
 
     return (
         <header>
-            <div className='fixed top-0 left-0 flex w-full bg-white bg-opacity-90 px-6 z-20 h-16 shadow-md items-center justify-between'>
+            <div
+                className={`fixed top-0 left-0 flex w-full bg-opacity-90 px-6 z-20 h-16 shadow-md items-center justify-between ${
+                    isAdminPage ? 'bg-red-100' : 'bg-white'
+                }`}
+            >
                 <Link href='/'>
                     <Image src={logo} alt='一天' className='h-10 w-10' />
                 </Link>
+                {isAdminPage && (
+                    <span className='text-lg font-bold text-red-600'>管理者ページ</span>
+                )}
                 {isDesktop ? (
                     <DesktopLinks links={menuLinks} />
                 ) : (
