@@ -1,5 +1,6 @@
 const scheduleTypes: Dictionary<string> = {
     tbd: '練習か試合か',
+    adjusting: '試合調整中',
     practice: '練習',
     practice_game: '練習試合',
     official_game: '公式戦',
